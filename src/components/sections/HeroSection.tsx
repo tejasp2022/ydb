@@ -14,6 +14,11 @@ interface TimeLeft {
   seconds: number;
 }
 
+interface MousePosition {
+  x: number;
+  y: number;
+}
+
 const calculateTimeLeft = (): TimeLeft => {
   const launchDate = new Date('2025-03-24T00:00:00').getTime();
   const now = new Date().getTime();
@@ -40,6 +45,7 @@ const TimeUnit: FC<{ value: number; label: string }> = ({ value, label }) => (
 
 export function HeroSection() {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(calculateTimeLeft());
+  const [mousePosition, setMousePosition] = useState<MousePosition>({ x: 0, y: 0 });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -47,6 +53,21 @@ export function HeroSection() {
     }, 1000);
 
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      // Get mouse position relative to the window size
+      const x = event.clientX / window.innerWidth;
+      const y = event.clientY / window.innerHeight;
+      setMousePosition({ x, y });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
   }, []);
 
   const scrollToHowItWorks = () => {
@@ -57,7 +78,7 @@ export function HeroSection() {
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-purple-50 to-white dark:from-gray-900 dark:to-gray-950">
       <div className="absolute inset-0">
-        <AnimatedBackground />
+        <AnimatedBackground mousePosition={mousePosition} reducedMotion={true} />
       </div>
       
       <div className="container px-4 mx-auto text-center relative z-10">
