@@ -1,22 +1,22 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { AnimatedBackground } from "@/components/ui/animated-background";
+// Import AnimatedBackground with no SSR to prevent hydration mismatch
+const AnimatedBackground = dynamic(
+  () => import("@/components/ui/animated-background").then(mod => mod.AnimatedBackground),
+  { ssr: false }
+);
 import { AnimatedText } from "@/components/ui/animated-text";
 import { ArrowDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { FC, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 
 interface TimeLeft {
   days: number;
   hours: number;
   minutes: number;
   seconds: number;
-}
-
-interface MousePosition {
-  x: number;
-  y: number;
 }
 
 const calculateTimeLeft = (): TimeLeft => {
@@ -45,7 +45,6 @@ const TimeUnit: FC<{ value: number; label: string }> = ({ value, label }) => (
 
 export function HeroSection() {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(calculateTimeLeft());
-  const [mousePosition, setMousePosition] = useState<MousePosition>({ x: 0, y: 0 });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -55,21 +54,6 @@ export function HeroSection() {
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      // Get mouse position relative to the window size
-      const x = event.clientX / window.innerWidth;
-      const y = event.clientY / window.innerHeight;
-      setMousePosition({ x, y });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, []);
-
   const scrollToHowItWorks = () => {
     const howItWorksSection = document.getElementById('how-it-works');
     howItWorksSection?.scrollIntoView({ behavior: 'smooth' });
@@ -77,8 +61,8 @@ export function HeroSection() {
 
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-purple-50 to-white dark:from-gray-900 dark:to-gray-950">
-      <div className="absolute inset-0">
-        <AnimatedBackground mousePosition={mousePosition} reducedMotion={true} />
+      <div className="absolute inset-0 bg-gradient-to-b from-purple-50 to-white dark:from-gray-900 dark:to-gray-950">
+        <AnimatedBackground reducedMotion={false} />
       </div>
       
       <div className="container px-4 mx-auto text-center relative z-10">
@@ -127,4 +111,4 @@ export function HeroSection() {
       </div>
     </section>
   );
-} 
+}
