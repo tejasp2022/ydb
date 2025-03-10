@@ -1,6 +1,7 @@
 import { HeroSection } from "@/components/sections/HeroSection";
 import { HowItWorksSection } from "@/components/sections/HowItWorksSection";
 import { WaitlistSection } from "@/components/sections/WaitlistSection";
+import FAQSection from '@/components/sections/FAQSection';
 
 export default function Home() {
   return (
@@ -8,6 +9,7 @@ export default function Home() {
       <HeroSection />
       <HowItWorksSection />
       <WaitlistSection />
+      <FAQSection />
     </main>
   );
 }
