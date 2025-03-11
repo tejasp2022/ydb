@@ -61,6 +61,21 @@ export function HeroSection() {
       </div>
       
       <div className="container px-4 mx-auto text-center relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex justify-center mb-6"
+        >
+          <div className="rounded-full border-4 border-purple-600 p-1 shadow-lg overflow-hidden w-24 h-24 md:w-32 md:h-32 flex items-center justify-center">
+            <img 
+              src="/logo.png" 
+              alt="Mornings With Mo Logo" 
+              className="w-full h-full rounded-full object-cover scale-120"
+            />
+          </div>
+        </motion.div>
+        
         <AnimatedText
           text="Mornings With Mo"
           className="text-5xl md:text-7xl font-bold tracking-tight mb-4 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent relative leading-tight pb-2"
