@@ -208,32 +208,16 @@ export function HowItWorksSection() {
         </div>
         
         <div className="max-w-6xl mx-auto mb-12">
-          {/* Replace the existing visualization with HubSpokeAnimation */}
-          <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-gray-200/50 dark:border-gray-700/50">
-            <HubSpokeAnimation 
-              contentNodes={contentNodes}
-              outputNodes={outputNodes}
-              hubIcon="/icons/hub-icon.png"
-              radius={200}
-              animationDuration={4}
-            />
-          </div>
+          {/* Remove card styling and just show the diagram directly */}
+          <HubSpokeAnimation 
+            contentNodes={contentNodes}
+            outputNodes={outputNodes}
+            hubIcon="/icons/hub-icon.png"
+            radius={200}
+            useTechLogos={true}
+          />
           
-          {/* Add a simple legend below the animation */}
-          <div className="mt-6 grid grid-cols-3 gap-4 text-center">
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Content Sources</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Twitter, Reddit, LinkedIn</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">AI Processing</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Summarization & Audio Generation</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Output Destinations</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Spotify, Apple, Podcast Apps</p>
-            </div>
-          </div>
+          {/* Remove the legend as well */}
         </div>
 
         <div className="text-center">

@@ -202,7 +202,7 @@ export function HeroSection() {
               transition={{ type: "spring", stiffness: 300, damping: 15 }}
             >
               <img 
-                src="/logo.png" 
+                src="/logo.jpeg" 
                 alt="Mornings With Mo Logo" 
                 className="w-full h-full rounded-full object-cover scale-110"
               />

@@ -26,13 +26,12 @@ const HubSpokeDemo = () => {
         Visualizing data flow from content sources through a processing hub to output destinations
       </p>
       
-      <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+      <div className="mb-8">
         <HubSpokeAnimation 
           contentNodes={contentNodes}
           outputNodes={outputNodes}
           hubIcon="/icons/hub-icon.png"
           radius={250}
-          animationDuration={4}
         />
       </div>
       
