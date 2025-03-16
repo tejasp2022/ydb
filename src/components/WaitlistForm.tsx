@@ -154,10 +154,13 @@ export function WaitlistForm() {
         <p className="mb-4">Please sign in with Google to join the waitlist</p>
         <Button
           onClick={async () => {
+            const redirectUrl = `${window.location.origin}/auth/callback`;
+            console.log("Redirect URL:", redirectUrl);
+            
             await supabase.auth.signInWithOAuth({
               provider: 'google',
               options: {
-                redirectTo: `${window.location.origin}/auth/callback`,
+                redirectTo: redirectUrl,
                 queryParams: {
                   access_type: 'offline',
                   prompt: 'consent',
