@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { UserCircle, Sparkles, Mic, Upload, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -49,19 +49,19 @@ export function HowItWorksSection() {
     waitlistSection?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Content nodes for the hub-spoke animation
-  const contentNodes = [
+  // Memoize the content nodes to prevent recreating the array on every render
+  const contentNodes = useMemo(() => [
     { id: 'twitter', icon: '/icons/twitter-icon.png' },
     { id: 'reddit', icon: '/icons/reddit-icon.png' },
     { id: 'linkedin', icon: '/icons/linkedin-icon.png' },
-  ];
+  ], []);
 
-  // Output nodes for the hub-spoke animation
-  const outputNodes = [
+  // Memoize the output nodes to prevent recreating the array on every render
+  const outputNodes = useMemo(() => [
     { id: 'spotify', icon: '/icons/spotify-icon.png' },
     { id: 'apple', icon: '/icons/apple-music-icon.png' },
     { id: 'podcast', icon: '/icons/question-icon.png' },
-  ];
+  ], []);
 
   const cards = [
     {
@@ -208,7 +208,6 @@ export function HowItWorksSection() {
         </div>
         
         <div className="max-w-6xl mx-auto mb-12">
-          {/* Remove card styling and just show the diagram directly */}
           <HubSpokeAnimation 
             contentNodes={contentNodes}
             outputNodes={outputNodes}
@@ -216,8 +215,6 @@ export function HowItWorksSection() {
             radius={200}
             useTechLogos={true}
           />
-          
-          {/* Remove the legend as well */}
         </div>
 
         <div className="text-center">

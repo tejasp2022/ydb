@@ -266,8 +266,8 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
         // Process each existing segment
         prevSegments.forEach(segment => {
           // Update progress
-          let newStartProgress = segment.startProgress + segment.speed;
-          let newEndProgress = segment.endProgress + segment.speed;
+          const newStartProgress = segment.startProgress + segment.speed;
+          const newEndProgress = segment.endProgress + segment.speed;
           
           // If segment completes its path
           if (newStartProgress >= 1) {

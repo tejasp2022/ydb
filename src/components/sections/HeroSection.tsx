@@ -1,11 +1,11 @@
 "use client";
 
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { AnimatedText } from "@/components/ui/animated-text";
 import { ArrowDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { FC, useEffect, useState, useRef } from "react";
-import Head from "next/head";
+import Image from 'next/image';
 
 interface TimeLeft {
   days: number;
@@ -71,7 +71,7 @@ const BackgroundWaveAnimation: FC = () => {
     
     // Animation variables
     let time = 0;
-    let heightFactors = [];
+    const heightFactors: number[] = [];
 
     // Responsive bar dimensions based on screen size
     const isMobile = window.innerWidth < 768;
@@ -215,9 +215,6 @@ export function HeroSection() {
 
   return (
     <>
-      <Head>
-        <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet" />
-      </Head>
       <section className="relative h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
         <BackgroundWaveAnimation />
         
@@ -233,9 +230,11 @@ export function HeroSection() {
               whileHover={{ scale: 1.05, rotate: 5 }}
               transition={{ type: "spring", stiffness: 300, damping: 15 }}
             >
-              <img 
+              <Image 
                 src="/logo.jpeg" 
-                alt="Your Daily Briefing Logo" 
+                alt="Your Daily Briefing Logo"
+                width={144}
+                height={144}
                 className="w-full h-full rounded-full object-cover scale-110"
               />
             </motion.div>
@@ -280,13 +279,13 @@ export function HeroSection() {
             transition={{ delay: 0.8, duration: 0.5 }}
           >
             <div className="inline-flex bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-xl border border-purple-100/70 dark:border-purple-900/30 py-6 px-3">
-              {renderTimeUnit(timeLeft?.days, "Days")}
+              {renderTimeUnit(timeLeft?.days ?? null, "Days")}
               <div className="self-stretch w-px bg-gradient-to-b from-purple-200 to-blue-200 dark:from-purple-700 dark:to-blue-700 mx-1" />
-              {renderTimeUnit(timeLeft?.hours, "Hours")}
+              {renderTimeUnit(timeLeft?.hours ?? null, "Hours")}
               <div className="self-stretch w-px bg-gradient-to-b from-purple-200 to-blue-200 dark:from-purple-700 dark:to-blue-700 mx-1" />
-              {renderTimeUnit(timeLeft?.minutes, "Minutes")}
+              {renderTimeUnit(timeLeft?.minutes ?? null, "Minutes")}
               <div className="self-stretch w-px bg-gradient-to-b from-purple-200 to-blue-200 dark:from-purple-700 dark:to-blue-700 mx-1" />
-              {renderTimeUnit(timeLeft?.seconds, "Seconds")}
+              {renderTimeUnit(timeLeft?.seconds ?? null, "Seconds")}
             </div>
           </motion.div>
 

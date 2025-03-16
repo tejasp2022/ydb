@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useState, useEffect } from "react";
+import { Session } from '@supabase/supabase-js';
 
 const formSchema = z.object({
   vocation: z.string().min(1, "Please select your vocation"),
@@ -25,7 +26,7 @@ const vocations = [
 export function WaitlistForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [needsNameInput, setNeedsNameInput] = useState(false);
   const supabase = createClientComponentClient();
@@ -89,6 +90,14 @@ export function WaitlistForm() {
       lastName: "",
     },
   });
+
+  useEffect(() => {
+    // When session changes and we need name input, check for existing values
+    if (needsNameInput && session?.user?.email) {
+      // Set the email if not a controlled field in the form schema
+      // form.setValue("email", session.user.email);
+    }
+  }, [needsNameInput, session, form]);
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     if (!session?.user) {
@@ -169,7 +178,7 @@ export function WaitlistForm() {
       <div className="text-center p-6 bg-green-50 dark:bg-green-900/20 rounded-lg">
         <h3 className="text-xl font-semibold mb-2">Thank you for signing up!</h3>
         <p className="text-gray-600 dark:text-gray-300">
-          We'll notify you when Morning Mo launches.
+          We&apos;ll notify you when Your Daily Briefing launches.
         </p>
       </div>
     );

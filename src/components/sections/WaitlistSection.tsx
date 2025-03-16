@@ -6,6 +6,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { FC } from "react";
+import { Session } from '@supabase/supabase-js';
 
 interface TimeLeft {
   days: number;
@@ -39,7 +40,7 @@ const TimeUnit: FC<{ value: number; label: string }> = ({ value, label }) => (
 );
 
 export function WaitlistSection() {
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClientComponentClient();
 
