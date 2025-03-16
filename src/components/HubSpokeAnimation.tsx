@@ -285,7 +285,9 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
               if (recentlyUsedPaths.size > Math.ceil(allPaths.length / 2)) {
                 // Remove the oldest path (assuming it's the first one in the set)
                 const oldestPath = recentlyUsedPaths.values().next().value;
-                recentlyUsedPaths.delete(oldestPath);
+                if (oldestPath) {
+                  recentlyUsedPaths.delete(oldestPath);
+                }
               }
               
               // Lower sparsity = higher chance to add a new segment
@@ -422,10 +424,9 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
     
     const path = document.getElementById(pathId);
     if (!path) return null;
-    
     try {
-      const pathLength = (path as SVGPathElement).getTotalLength();
-      const point = (path as SVGPathElement).getPointAtLength(pathLength * progress);
+      const pathLength = (path as unknown as SVGPathElement).getTotalLength();
+      const point = (path as unknown as SVGPathElement).getPointAtLength(pathLength * progress);
       return { x: point.x, y: point.y };
     } catch (error) {
       return null;
@@ -678,13 +679,11 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
             {segments.map(segment => {
               const path = document.getElementById(segment.pathId);
               if (!path) return null;
-              
               try {
-                const pathElement = path as SVGPathElement;
+                const pathElement = path as unknown as SVGPathElement;
                 const pathLength = pathElement.getTotalLength();
                 const startPoint = pathElement.getPointAtLength(pathLength * segment.startProgress);
                 const endPoint = pathElement.getPointAtLength(pathLength * segment.endProgress);
-                
                 // Create a new path for just the segment
                 const segmentPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 
