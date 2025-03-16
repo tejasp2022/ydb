@@ -166,9 +166,17 @@ const BackgroundWaveAnimation: FC = () => {
 };
 
 export function HeroSection() {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>(calculateTimeLeft());
+  // Use null as initial state to indicate loading state
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // Set isClient to true when component mounts on client
+    setIsClient(true);
+    
+    // Initialize with initial calculation
+    setTimeLeft(calculateTimeLeft());
+    
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft());
     }, 1000);
@@ -179,6 +187,30 @@ export function HeroSection() {
   const scrollToHowItWorks = () => {
     const howItWorksSection = document.getElementById('how-it-works');
     howItWorksSection?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Render a placeholder during server-side rendering
+  const renderTimeUnit = (value: number | null, label: string) => {
+    if (!isClient) {
+      return (
+        <motion.div 
+          className="flex flex-col items-center px-3 sm:px-4"
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.2 }}
+        >
+          <div className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            00
+          </div>
+          <div className="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-1">
+            {label}
+          </div>
+        </motion.div>
+      );
+    }
+    
+    return (
+      <TimeUnit value={value || 0} label={label} />
+    );
   };
 
   return (
@@ -248,13 +280,13 @@ export function HeroSection() {
             transition={{ delay: 0.8, duration: 0.5 }}
           >
             <div className="inline-flex bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-xl border border-purple-100/70 dark:border-purple-900/30 py-6 px-3">
-              <TimeUnit value={timeLeft.days} label="Days" />
+              {renderTimeUnit(timeLeft?.days, "Days")}
               <div className="self-stretch w-px bg-gradient-to-b from-purple-200 to-blue-200 dark:from-purple-700 dark:to-blue-700 mx-1" />
-              <TimeUnit value={timeLeft.hours} label="Hours" />
+              {renderTimeUnit(timeLeft?.hours, "Hours")}
               <div className="self-stretch w-px bg-gradient-to-b from-purple-200 to-blue-200 dark:from-purple-700 dark:to-blue-700 mx-1" />
-              <TimeUnit value={timeLeft.minutes} label="Minutes" />
+              {renderTimeUnit(timeLeft?.minutes, "Minutes")}
               <div className="self-stretch w-px bg-gradient-to-b from-purple-200 to-blue-200 dark:from-purple-700 dark:to-blue-700 mx-1" />
-              <TimeUnit value={timeLeft.seconds} label="Seconds" />
+              {renderTimeUnit(timeLeft?.seconds, "Seconds")}
             </div>
           </motion.div>
 

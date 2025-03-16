@@ -531,9 +531,7 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
         ref={containerRef} 
         className="relative w-full overflow-hidden"
         style={{ 
-          minHeight: window.innerWidth < 640 
-            ? Math.max(350, window.innerHeight * 0.6) // Taller on mobile
-            : Math.max(radius * 2, 500) + 100 
+          minHeight: "500px" // Fixed height for server-side rendering
         }}
       >
         {/* No background or styling at all */}
@@ -546,9 +544,11 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
       ref={containerRef} 
       className="relative w-full overflow-hidden"
       style={{ 
-        minHeight: window.innerWidth < 640 
-          ? Math.max(350, window.innerHeight * 0.6) // Taller on mobile
-          : Math.max(radius * 2, 500) + 100,
+        minHeight: isClient && typeof window !== 'undefined' 
+          ? (window.innerWidth < 640 
+              ? Math.max(350, window.innerHeight * 0.6) // Taller on mobile
+              : Math.max(radius * 2, 500) + 100)
+          : 500, // Fallback height
         // Add max-width to ensure the diagram doesn't get too stretched on very wide screens
         maxWidth: '1600px',
         margin: '0 auto'
