@@ -30,6 +30,7 @@ interface HubSpokeAnimationProps {
   hubIcon?: string;
   radius?: number;
   useTechLogos?: boolean;
+  sparsity?: number; // 0-1 value: 0 = dense (many animations), 1 = sparse (few animations)
 }
 
 const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
@@ -38,6 +39,7 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
   hubIcon = '/logo.jpeg',
   radius = 250,
   useTechLogos = false,
+  sparsity = 0.4, // Default to medium sparsity
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [nodes, setNodes] = useState<Node[]>([]);
@@ -105,12 +107,27 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
     const centerY = containerRect.height / 2;
     
     // Calculate responsive radius based on container width
-    // Use at least 40% of container width, but respect the provided radius as minimum
-    const responsiveRadius = Math.max(radius, containerRect.width * 0.4);
+    const isMobile = containerRect.width < 640; // Standard Tailwind sm breakpoint
+    const isLargeScreen = containerRect.width >= 1024; // lg breakpoint
     
-    // Limit maximum radius for very large screens
-    const effectiveRadius = Math.min(responsiveRadius, 500);
-
+    // Adjust radius calculation for different screen sizes
+    const responsiveRadius = isMobile
+      ? {
+          x: Math.min(containerRect.width * 0.35, 120), // Limit horizontal radius on mobile
+          y: Math.min(containerRect.height * 0.35, 180)  // Allow more vertical space
+        }
+      : isLargeScreen
+      ? {
+          // For large screens, use more horizontal space
+          x: Math.min(containerRect.width * 0.45, 400), // Increased horizontal radius
+          y: Math.min(containerRect.width * 0.35, 300)  // Keep vertical radius more constrained
+        }
+      : {
+          // For medium screens
+          x: Math.min(radius, containerRect.width * 0.4, 320),
+          y: Math.min(radius, containerRect.width * 0.4, 300)
+        };
+    
     // Create only the central hub node
     const hubNode: Node = {
       id: 'hub',
@@ -119,38 +136,45 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
       position: { x: centerX, y: centerY }
     };
 
-    // Position content nodes on the left side with wider angle range (150° to 210°)
+    // Position content nodes on the left side with wider angle range
     const contentNodeCount = contentNodes.length;
+    
+    // Adjust angle ranges based on screen size
+    const contentAngleRange = isMobile ? 120 : 80; // Slightly narrower on desktop for more horizontal spread
+    const contentStartAngle = isMobile ? 120 : 140; // Adjusted for more horizontal spread
+    
     const contentNodesWithPosition = contentNodes.map((node, index) => {
-      const angleRange = 60; // 210° - 150°
-      const angleStep = angleRange / (contentNodeCount - 1 || 1);
-      const angle = (150 + index * angleStep) * (Math.PI / 180);
+      const angleStep = contentAngleRange / (contentNodeCount - 1 || 1);
+      const angle = (contentStartAngle + index * angleStep) * (Math.PI / 180);
       
       return {
         ...node,
         type: 'content' as NodeType,
         position: {
-          x: centerX + effectiveRadius * Math.cos(angle),
-          y: centerY + effectiveRadius * Math.sin(angle),
+          x: centerX + responsiveRadius.x * Math.cos(angle),
+          y: centerY + responsiveRadius.y * Math.sin(angle),
         },
         angle,
       };
     });
 
-    // Position output nodes on the right side with narrower angle range
+    // Position output nodes on the right side
     const outputNodeCount = outputNodes.length;
+    
+    // Adjust angle ranges based on screen size
+    const outputAngleRange = isMobile ? 60 : 30; // Narrower on desktop for more horizontal spread
+    const outputStartAngle = isMobile ? -30 : -15; // Adjusted for more horizontal spread
+    
     const outputNodesWithPosition = outputNodes.map((node, index) => {
-      // Use a narrower angle range (20° instead of 60°) to position output nodes closer together
-      const angleRange = 20; // 10° - (-10°)
-      const angleStep = angleRange / (outputNodeCount - 1 || 1);
-      const angle = (-10 + index * angleStep) * (Math.PI / 180);
+      const angleStep = outputAngleRange / (outputNodeCount - 1 || 1);
+      const angle = (outputStartAngle + index * angleStep) * (Math.PI / 180);
       
       return {
         ...node,
         type: 'output' as NodeType,
         position: {
-          x: centerX + effectiveRadius * Math.cos(angle),
-          y: centerY + effectiveRadius * Math.sin(angle),
+          x: centerX + responsiveRadius.x * Math.cos(angle),
+          y: centerY + responsiveRadius.y * Math.sin(angle),
         },
         angle,
       };
@@ -168,6 +192,9 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
       cancelAnimationFrame(animationRef.current);
     }
     
+    // Define a consistent animation speed
+    const animationSpeed = 0.025;
+    
     // Initialize segments
     const initialSegments: AnimatedSegment[] = [];
     const contentNodesList = nodes.filter(node => node.type === 'content');
@@ -176,72 +203,204 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
     
     if (!hubNode) return;
     
-    // Create segments from content nodes to hub
+    // Create a pool of all possible paths
+    const allPaths: {id: string, sourceNode: string, targetNode: string}[] = [];
+    
+    // Add content-to-hub paths
     contentNodesList.forEach(contentNode => {
-      const pathId = `path-${contentNode.id}-to-hub`;
-      // Add 1-3 segments per path with different speeds and lengths
-      for (let i = 0; i < Math.floor(Math.random() * 2) + 2; i++) {
-        // const segmentLength = 0.1 + Math.random() * 0.1; // 10-20% of the path
-        const segmentLength = 0.1; // 10-20% of the path
-        const startProgress = Math.random() * (1 - segmentLength); // Random starting position
-        
-        initialSegments.push({
-          id: `segment-${contentNode.id}-to-hub-${i}`,
-          pathId,
-          startProgress,
-          endProgress: startProgress + segmentLength,
-        //   speed: 0.005 + Math.random() * 0.003, // Faster speed
-          speed: 0.015, // Faster speed
-          sourceNode: contentNode.id,
-          targetNode: 'hub'
-        });
-      }
+      allPaths.push({
+        id: `path-${contentNode.id}-to-hub`,
+        sourceNode: contentNode.id,
+        targetNode: 'hub'
+      });
     });
     
-    // Create segments from hub to output nodes
+    // Add hub-to-output paths
     outputNodesList.forEach(outputNode => {
-      const pathId = `path-hub-to-${outputNode.id}`;
-      // Add 1-3 segments per path with different speeds and lengths
-      for (let i = 0; i < Math.floor(Math.random() * 2) + 2; i++) {
-        const segmentLength = 0.1 + Math.random() * 0.1; // 10-20% of the path
-        const startProgress = Math.random() * (1 - segmentLength); // Random starting position
-        
-        initialSegments.push({
-          id: `segment-hub-to-${outputNode.id}-${i}`,
-          pathId,
-          startProgress,
-          endProgress: startProgress + segmentLength,
-          speed: 0.005 + Math.random() * 0.003, // Faster speed
-          sourceNode: 'hub',
-          targetNode: outputNode.id
-        });
-      }
+      allPaths.push({
+        id: `path-hub-to-${outputNode.id}`,
+        sourceNode: 'hub',
+        targetNode: outputNode.id
+      });
+    });
+    
+    // Keep track of recently used paths to avoid immediate reselection
+    const recentlyUsedPaths = new Set<string>();
+    
+    // Calculate active paths based on sparsity
+    // Higher sparsity = fewer active paths
+    const maxActivePaths = Math.max(1, Math.floor(allPaths.length * (1 - sparsity * 0.8)));
+    const minActivePaths = Math.max(1, Math.floor(allPaths.length * (1 - sparsity * 0.9)));
+    
+    // Randomly select a subset of paths to animate initially
+    const pathCount = Math.floor(minActivePaths + Math.random() * (maxActivePaths - minActivePaths));
+    const shuffledPaths = [...allPaths].sort(() => Math.random() - 0.5).slice(0, pathCount);
+    
+    // Create segments for the selected paths
+    shuffledPaths.forEach(path => {
+      const segmentLength = 0.15; // 15% of the path
+      const startProgress = Math.random() * (1 - segmentLength);
+      
+      initialSegments.push({
+        id: `segment-${path.id}`,
+        pathId: path.id,
+        startProgress,
+        endProgress: startProgress + segmentLength,
+        speed: animationSpeed, // Use consistent speed
+        sourceNode: path.sourceNode,
+        targetNode: path.targetNode
+      });
+      
+      // Mark this path as recently used
+      recentlyUsedPaths.add(path.id);
     });
     
     setSegments(initialSegments);
     
     // Animation function to update segment positions
     const animateSegments = () => {
-      setSegments(prevSegments => 
-        prevSegments.map(segment => {
+      setSegments(prevSegments => {
+        // Create a new array for the updated segments
+        const updatedSegments: AnimatedSegment[] = [];
+        
+        // Process each existing segment
+        prevSegments.forEach(segment => {
           // Update progress
           let newStartProgress = segment.startProgress + segment.speed;
           let newEndProgress = segment.endProgress + segment.speed;
           
-          // Reset when the segment goes off the path
+          // If segment completes its path
           if (newStartProgress >= 1) {
-            const segmentLength = segment.endProgress - segment.startProgress;
-            newStartProgress = 0;
-            newEndProgress = segmentLength;
+            // Higher sparsity = higher chance to remove segment
+            const removalChance = 0.7 + (sparsity * 0.2); // 0.7-0.9 based on sparsity
+            
+            if (Math.random() < removalChance) {
+              // Don't add this segment to updatedSegments (effectively removing it)
+              
+              // Add this path to recently used paths to prevent immediate reselection
+              recentlyUsedPaths.add(segment.pathId);
+              
+              // Limit the size of recentlyUsedPaths to half of all paths
+              // This ensures we don't eventually block all paths
+              if (recentlyUsedPaths.size > Math.ceil(allPaths.length / 2)) {
+                // Remove the oldest path (assuming it's the first one in the set)
+                const oldestPath = recentlyUsedPaths.values().next().value;
+                recentlyUsedPaths.delete(oldestPath);
+              }
+              
+              // Lower sparsity = higher chance to add a new segment
+              const addChance = 0.5 - (sparsity * 0.3); // 0.5-0.2 based on sparsity
+              
+              if (Math.random() < addChance) {
+                // Select a random path that doesn't already have a segment AND isn't recently used
+                const activePaths = updatedSegments.map(s => s.pathId);
+                const availablePaths = allPaths.filter(p => 
+                  !activePaths.includes(p.id) && 
+                  !recentlyUsedPaths.has(p.id)
+                );
+                
+                if (availablePaths.length > 0) {
+                  const randomPath = availablePaths[Math.floor(Math.random() * availablePaths.length)];
+                  const segmentLength = 0.15;
+                  
+                  updatedSegments.push({
+                    id: `segment-${randomPath.id}-${Date.now()}`,
+                    pathId: randomPath.id,
+                    startProgress: 0,
+                    endProgress: segmentLength,
+                    speed: animationSpeed, // Use consistent speed
+                    sourceNode: randomPath.sourceNode,
+                    targetNode: randomPath.targetNode
+                  });
+                  
+                  // Mark this path as recently used
+                  recentlyUsedPaths.add(randomPath.id);
+                } else if (allPaths.length > activePaths.length) {
+                  // If all available paths are recently used, pick from any unused path
+                  const anyUnusedPaths = allPaths.filter(p => !activePaths.includes(p.id));
+                  if (anyUnusedPaths.length > 0) {
+                    const randomPath = anyUnusedPaths[Math.floor(Math.random() * anyUnusedPaths.length)];
+                    const segmentLength = 0.15;
+                    
+                    updatedSegments.push({
+                      id: `segment-${randomPath.id}-${Date.now()}`,
+                      pathId: randomPath.id,
+                      startProgress: 0,
+                      endProgress: segmentLength,
+                      speed: animationSpeed,
+                      sourceNode: randomPath.sourceNode,
+                      targetNode: randomPath.targetNode
+                    });
+                  }
+                }
+              }
+            } else {
+              // Reset the segment to the beginning of the path
+              updatedSegments.push({
+                ...segment,
+                startProgress: 0,
+                endProgress: segment.endProgress - segment.startProgress
+              });
+            }
+          } else {
+            // Keep the segment with updated position
+            updatedSegments.push({
+              ...segment,
+              startProgress: newStartProgress,
+              endProgress: newEndProgress
+            });
           }
+        });
+        
+        // Calculate minimum active segments based on sparsity
+        const minSegments = Math.max(1, Math.floor(allPaths.length * (0.2 - sparsity * 0.15))); // 0.2-0.05 based on sparsity
+        
+        // If we have too few segments, randomly add some more
+        if (updatedSegments.length < minSegments) {
+          const activePaths = updatedSegments.map(s => s.pathId);
           
-          return {
-            ...segment,
-            startProgress: newStartProgress,
-            endProgress: newEndProgress
-          };
-        })
-      );
+          // Prefer paths that aren't recently used
+          const preferredPaths = allPaths.filter(p => 
+            !activePaths.includes(p.id) && 
+            !recentlyUsedPaths.has(p.id)
+          );
+          
+          // If no preferred paths are available, use any available path
+          const availablePaths = preferredPaths.length > 0 
+            ? preferredPaths 
+            : allPaths.filter(p => !activePaths.includes(p.id));
+          
+          // Add 1-2 new segments
+          const newSegmentsCount = Math.min(
+            Math.floor(1 + Math.random()), 
+            availablePaths.length
+          );
+          
+          for (let i = 0; i < newSegmentsCount; i++) {
+            if (availablePaths.length > 0) {
+              const randomIndex = Math.floor(Math.random() * availablePaths.length);
+              const randomPath = availablePaths[randomIndex];
+              availablePaths.splice(randomIndex, 1); // Remove the selected path
+              
+              const segmentLength = 0.15;
+              updatedSegments.push({
+                id: `segment-${randomPath.id}-${Date.now()}-${i}`,
+                pathId: randomPath.id,
+                startProgress: 0,
+                endProgress: segmentLength,
+                speed: animationSpeed, // Use consistent speed
+                sourceNode: randomPath.sourceNode,
+                targetNode: randomPath.targetNode
+              });
+              
+              // Mark this path as recently used
+              recentlyUsedPaths.add(randomPath.id);
+            }
+          }
+        }
+        
+        return updatedSegments;
+      });
       
       animationRef.current = requestAnimationFrame(animateSegments);
     };
@@ -255,7 +414,7 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [isClient, nodes]);
+  }, [isClient, nodes, sparsity]);
 
   // Helper function to get point coordinates along a path
   const getPointAlongPath = (pathId: string, progress: number): { x: number, y: number } | null => {
@@ -370,8 +529,12 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
     return (
       <div 
         ref={containerRef} 
-        className="relative w-full h-[600px] overflow-hidden"
-        style={{ minHeight: Math.max(radius * 2, 500) + 100 }}
+        className="relative w-full overflow-hidden"
+        style={{ 
+          minHeight: window.innerWidth < 640 
+            ? Math.max(350, window.innerHeight * 0.6) // Taller on mobile
+            : Math.max(radius * 2, 500) + 100 
+        }}
       >
         {/* No background or styling at all */}
       </div>
@@ -381,8 +544,15 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
   return (
     <div 
       ref={containerRef} 
-      className="relative w-full h-[600px] overflow-hidden"
-      style={{ minHeight: Math.max(radius * 2, 500) + 100 }}
+      className="relative w-full overflow-hidden"
+      style={{ 
+        minHeight: window.innerWidth < 640 
+          ? Math.max(350, window.innerHeight * 0.6) // Taller on mobile
+          : Math.max(radius * 2, 500) + 100,
+        // Add max-width to ensure the diagram doesn't get too stretched on very wide screens
+        maxWidth: '1600px',
+        margin: '0 auto'
+      }}
     >
       {nodes.length > 0 && containerSize.width > 0 && (
         <>
@@ -428,6 +598,20 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
                   <stop offset="100%" stopColor="#D1D5DB" />
                 </linearGradient>
               ))}
+              
+              {/* Animated segment gradients - content to hub */}
+              <linearGradient id="segment-content-to-hub" gradientUnits="userSpaceOnUse" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#9333ea" />
+                <stop offset="50%" stopColor="#a855f7" />
+                <stop offset="100%" stopColor="#7c3aed" />
+              </linearGradient>
+              
+              {/* Animated segment gradients - hub to output */}
+              <linearGradient id="segment-hub-to-output" gradientUnits="userSpaceOnUse" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#FF0000" />
+                <stop offset="50%" stopColor="#a855f7" />
+                <stop offset="100%" stopColor="#9333ea" />
+              </linearGradient>
             </defs>
             
             {/* Content to hub connections */}
@@ -524,12 +708,15 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
                 const isHighlighted = hoveredNode === segment.sourceNode || 
                                      hoveredNode === segment.targetNode;
                 
+                // Use gradient based on direction
+                const gradientId = isContentToHub ? "url(#segment-content-to-hub)" : "url(#segment-hub-to-output)";
+                
                 return (
                   <path
                     key={segment.id}
                     d={pathData}
                     fill="none"
-                    stroke={isContentToHub ? "#9333ea" : "#7c3aed"}
+                    stroke={gradientId}
                     strokeWidth={isHighlighted ? 4 : 3}
                     strokeOpacity={isHighlighted ? 0.9 : 0.7}
                     strokeLinecap="round"
@@ -542,20 +729,21 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
             })}
           </svg>
 
-          {/* Render nodes with simplified styling - no borders or shadows */}
+          {/* Render nodes with responsive sizing */}
           {nodes.map(node => {
             const isHovered = hoveredNode === node.id;
             const nodeScale = isHovered ? 'scale-110' : 'scale-100';
+            const isMobile = containerSize.width < 640;
             
             return (
               <div
                 key={node.id}
                 className={`absolute transform -translate-x-1/2 -translate-y-1/2 rounded-full ${
                   node.type === 'hub' 
-                    ? 'w-24 h-24 bg-white/80'
+                    ? isMobile ? 'w-16 h-16 bg-white/80' : 'w-24 h-24 bg-white/80'
                     : node.type === 'processing'
-                      ? 'w-20 h-20 bg-white/80'
-                      : 'w-16 h-16 bg-white/80'
+                      ? isMobile ? 'w-14 h-14 bg-white/80' : 'w-20 h-20 bg-white/80'
+                      : isMobile ? 'w-12 h-12 bg-white/80' : 'w-16 h-16 bg-white/80'
                 } ${
                   node.type === 'content' || node.type === 'output'
                     ? isHovered 
@@ -597,11 +785,11 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
                   </div>
                 ) : node.type === 'hub' ? (
                   <div className="flex items-center justify-center w-full h-full">
-                    <div className={`w-20 h-20 rounded-full flex items-center justify-center ${isHovered ? 'bg-white shadow-md' : 'bg-white/90'} p-1 transition-all duration-300`}>
+                    <div className={`${isMobile ? 'w-14 h-14' : 'w-20 h-20'} rounded-full flex items-center justify-center ${isHovered ? 'bg-white shadow-md' : 'bg-white/90'} p-1 transition-all duration-300`}>
                       <img 
                         src={node.icon} 
                         alt={`${node.id} icon`} 
-                        className={`w-14 h-14 object-contain ${isHovered ? 'scale-110' : 'scale-100'} transition-transform duration-300`}
+                        className={`${isMobile ? 'w-10 h-10' : 'w-14 h-14'} object-contain ${isHovered ? 'scale-110' : 'scale-100'} transition-transform duration-300`}
                       />
                     </div>
                   </div>
@@ -610,7 +798,7 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
                     <img 
                       src={node.icon} 
                       alt={`${node.id} icon`} 
-                      className={`w-10 h-10 ${isHovered ? 'scale-110' : 'scale-100'} transition-transform duration-300`}
+                      className={`${isMobile ? 'w-7 h-7' : 'w-10 h-10'} ${isHovered ? 'scale-110' : 'scale-100'} transition-transform duration-300`}
                     />
                   </div>
                 )}

@@ -203,7 +203,7 @@ export function HeroSection() {
             >
               <img 
                 src="/logo.jpeg" 
-                alt="Mornings With Mo Logo" 
+                alt="Your Daily Briefing Logo" 
                 className="w-full h-full rounded-full object-cover scale-110"
               />
             </motion.div>
@@ -220,7 +220,7 @@ export function HeroSection() {
                   filter: "url(#distressFilter)"
                 }}
             >
-              Mornings With Mo
+              Your Daily Briefing
             </h1>
             
             <svg width="0" height="0" className="absolute">

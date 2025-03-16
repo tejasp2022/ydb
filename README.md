@@ -1,4 +1,4 @@
-# Mornings With Mo: Personalized AI-Powered Podcasts
+# Your Daily Briefing: Personalized AI-Powered Podcasts
 
 ## Overview
 

@@ -86,7 +86,7 @@ export function WaitlistSection() {
       <div className="container px-4 mx-auto relative z-10">
         <div className="max-w-2xl mx-auto text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-            Get Exclusive Early Access to Mornings With Mo
+            Get Exclusive Early Access to Your Daily Briefing
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
             Join our waitlist and get early access to personalized podcasts that match your interests.
