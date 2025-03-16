@@ -40,7 +40,7 @@ const HubSpokeDemo = () => {
           <h2 className="text-xl font-semibold mb-3">Content Sources</h2>
           <p className="text-gray-600">
             Content nodes represent data sources that feed into the central processing hub.
-            In this example, we're showing content from Reddit, Medium, and Hacker News.
+            In this example, we&apos;re showing content from Reddit, Medium, and Hacker News.
           </p>
         </div>
         
