@@ -184,21 +184,8 @@
     "loadingText": "Signing up...",
     "questions": [
       {
-        "id": "firstName",
-        "type": "text",
-        "label": "First Name",
-        "placeholder": "Your first name",
-        "errorMessage": "First name is required"
-      },
-      {
-        "id": "lastName",
-        "type": "text",
-        "label": "Last Name",
-        "placeholder": "Your last name",
-        "errorMessage": "Last name is required"
-      },
-      {
         "id": "vocation",
+        "dbField": "vocation",
         "type": "single-select",
         "label": "What best describes you?",
         "errorMessage": "Please select your vocation",
@@ -223,6 +210,7 @@
       },
       {
         "id": "interests",
+        "dbField": "interests",
         "type": "multi-select",
         "label": "What topics are you interested in?",
         "errorMessage": "Please select at least one interest",
@@ -255,6 +243,7 @@
       },
       {
         "id": "podcastLength",
+        "dbField": "podcast_length",
         "type": "single-select",
         "label": "Preferred podcast length?",
         "errorMessage": "Please select your preferred podcast length",

@@ -214,7 +214,6 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
     
     // Add content-to-hub paths
     contentNodesList.forEach(contentNode => {
-        console.log(contentNode);
       allPaths.push({
         id: `path-${contentNode.id}-to-hub`,
         sourceNode: contentNode.id,

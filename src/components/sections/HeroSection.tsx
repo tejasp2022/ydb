@@ -242,9 +242,9 @@ export function HeroSection() {
           </motion.div>
           
           <div className="relative mb-6">
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight pb-2 z-10 uppercase"
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-normal tracking-tight pb-2 z-10 uppercase"
                 style={{
-                  fontFamily: "'Special Elite', 'Courier New', monospace", 
+                  fontFamily: "GeistSans, sans-serif", 
                   color: "black",
                   textShadow: "1px 1px 0 rgba(0,0,0,0.1)",
                   letterSpacing: "-0.03em",
@@ -269,6 +269,7 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.7 }}
             className="text-xl md:text-3xl font-semibold mb-14 max-w-3xl mx-auto relative bg-clip-text text-transparent bg-gradient-to-r from-gray-700 to-gray-900 dark:from-gray-300 dark:to-gray-100"
+            style={{ fontFamily: "GeistSans, sans-serif" }}
           >
             {content.heroSection.description}
           </motion.p>
