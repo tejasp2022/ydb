@@ -27,6 +27,42 @@ type QuestionType = {
 type FormValue = string | string[];
 type FormData = Record<string, FormValue>;
 
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1,
+    transition: { 
+      when: "beforeChildren",
+      staggerChildren: 0.1,
+      duration: 0.5
+    }
+  },
+  exit: {
+    opacity: 0,
+    transition: { 
+      when: "afterChildren",
+      staggerChildren: 0.05,
+      staggerDirection: -1,
+      duration: 0.3
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { 
+    y: 0, 
+    opacity: 1,
+    transition: { type: "spring", stiffness: 300, damping: 24 }
+  },
+  exit: { 
+    y: -20, 
+    opacity: 0,
+    transition: { duration: 0.2 }
+  }
+};
+
 export function WaitlistForm() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [formData, setFormData] = useState<FormData>({});
@@ -35,6 +71,7 @@ export function WaitlistForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [userData, setUserData] = useState<SupabaseUser | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const supabase = createClientComponentClient();
 
   const questions = content.waitlistForm.questions as QuestionType[];
@@ -255,96 +292,206 @@ export function WaitlistForm() {
     switch (currentQuestion.type) {
       case 'text':
         return (
-          <div>
+          <motion.div variants={itemVariants}>
             <Label 
               htmlFor={currentQuestion.id} 
-              className="block text-lg font-medium mb-2"
+              className="block text-xl font-medium mb-4 text-gray-800 dark:text-gray-100"
             >
               {currentQuestion.label}
             </Label>
-            <Input
-              id={currentQuestion.id}
-              placeholder={currentQuestion.placeholder}
-              value={formData[currentQuestion.dbField] as string || ''}
-              onChange={(e) => handleTextChange(currentQuestion.id, e.target.value, currentQuestion.dbField)}
-              onKeyDown={handleKeyDown}
-              className="w-full p-3 text-lg bg-white/50 dark:bg-gray-900/50 border-gray-300 dark:border-gray-700 rounded-xl focus:ring-purple-500 focus:border-purple-500"
-              autoFocus
-            />
-          </div>
+            <div className="relative">
+              <Input
+                id={currentQuestion.id}
+                placeholder={currentQuestion.placeholder}
+                value={formData[currentQuestion.dbField] as string || ''}
+                onChange={(e) => handleTextChange(currentQuestion.id, e.target.value, currentQuestion.dbField)}
+                onKeyDown={handleKeyDown}
+                className="w-full p-4 pl-5 text-lg bg-white/70 dark:bg-gray-800/70 border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent shadow-sm transition-all duration-200"
+                ref={inputRef}
+                autoFocus
+              />
+              {formData[currentQuestion.dbField] && (
+                <motion.div 
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-500 dark:text-purple-400"
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </motion.div>
+              )}
+            </div>
+            {currentQuestion.placeholder && (
+              <motion.p 
+                className="mt-2 text-sm text-gray-500 dark:text-gray-400"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.8 }}
+                transition={{ delay: 0.3 }}
+              >
+                {currentQuestion.placeholder}
+              </motion.p>
+            )}
+          </motion.div>
         );
       
       case 'single-select':
         return (
-          <div>
-            <Label className="block text-lg font-medium mb-4">
+          <motion.div variants={itemVariants}>
+            <Label className="block text-xl font-medium mb-6 text-gray-800 dark:text-gray-100">
               {currentQuestion.label}
             </Label>
             <RadioGroup
               value={formData[currentQuestion.dbField] as string || ''}
               onValueChange={(value: string) => handleSingleSelectChange(currentQuestion.id, value, currentQuestion.dbField)}
-              className="space-y-3"
+              className="space-y-4 grid grid-cols-1 gap-3"
             >
-              {currentQuestion.options?.map((option) => (
-                <div
+              {currentQuestion.options?.map((option, idx) => (
+                <motion.div
                   key={option.id}
-                  className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 + 0.2 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`relative overflow-hidden rounded-xl transition-all duration-300 ${
                     formData[currentQuestion.dbField] === option.id
-                      ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800'
-                      : 'bg-white/50 dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                  } border border-gray-200 dark:border-gray-700`}
+                      ? 'ring-2 ring-purple-500 dark:ring-purple-400 ring-offset-2 dark:ring-offset-gray-800'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-700/70'
+                  }`}
                 >
-                  <RadioGroupItem 
-                    value={option.id} 
-                    id={`${currentQuestion.id}-${option.id}`}
-                    className="text-purple-600 dark:text-purple-400"
-                  />
-                  <Label 
+                  <label
                     htmlFor={`${currentQuestion.id}-${option.id}`}
-                    className="flex-grow cursor-pointer font-medium"
+                    className={`flex items-center w-full p-4 cursor-pointer ${
+                      formData[currentQuestion.dbField] === option.id
+                        ? 'bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30'
+                        : 'bg-white/70 dark:bg-gray-800/70'
+                    }`}
                   >
-                    {option.label}
-                  </Label>
-                </div>
+                    <div className="flex items-center justify-center">
+                      <div className={`w-6 h-6 flex items-center justify-center rounded-full border-2 mr-3 ${
+                        formData[currentQuestion.dbField] === option.id
+                          ? 'border-purple-500 dark:border-purple-400'
+                          : 'border-gray-300 dark:border-gray-600'
+                      }`}>
+                        {formData[currentQuestion.dbField] === option.id && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="w-3 h-3 rounded-full bg-purple-500 dark:bg-purple-400"
+                          />
+                        )}
+                      </div>
+                      <RadioGroupItem 
+                        value={option.id} 
+                        id={`${currentQuestion.id}-${option.id}`}
+                        className="sr-only"
+                      />
+                      <span className="font-medium text-lg">{option.label}</span>
+                    </div>
+                    
+                    {formData[currentQuestion.dbField] === option.id && (
+                      <motion.div 
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="ml-auto text-purple-600 dark:text-purple-400"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </motion.div>
+                    )}
+                  </label>
+                  
+                  {/* Animated highlight effect when selected */}
+                  {formData[currentQuestion.dbField] === option.id && (
+                    <motion.div 
+                      className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 dark:from-purple-500/20 dark:to-indigo-500/20"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  )}
+                </motion.div>
               ))}
             </RadioGroup>
-          </div>
+          </motion.div>
         );
       
       case 'multi-select':
         return (
-          <div>
-            <Label className="block text-lg font-medium mb-4">
+          <motion.div variants={itemVariants}>
+            <Label className="block text-xl font-medium mb-6 text-gray-800 dark:text-gray-100">
               {currentQuestion.label}
             </Label>
-            <div className="space-y-3">
-              {currentQuestion.options?.map((option) => (
-                <div
+            <div className="space-y-4 grid grid-cols-1 gap-3">
+              {currentQuestion.options?.map((option, idx) => (
+                <motion.div
                   key={option.id}
-                  className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 + 0.2 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`relative overflow-hidden rounded-xl transition-all duration-300 ${
                     (formData[currentQuestion.dbField] as string[])?.includes(option.id)
-                      ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800'
-                      : 'bg-white/50 dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                  } border border-gray-200 dark:border-gray-700`}
+                      ? 'ring-2 ring-purple-500 dark:ring-purple-400 ring-offset-2 dark:ring-offset-gray-800'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-700/70'
+                  }`}
                 >
-                  <Checkbox
-                    id={`${currentQuestion.id}-${option.id}`}
-                    checked={(formData[currentQuestion.dbField] as string[])?.includes(option.id) || false}
-                    onCheckedChange={(checked) => 
-                      handleMultiSelectChange(currentQuestion.id, option.id, checked as boolean, currentQuestion.dbField)
-                    }
-                    className="text-purple-600 dark:text-purple-400"
-                  />
-                  <Label 
+                  <label
                     htmlFor={`${currentQuestion.id}-${option.id}`}
-                    className="flex-grow cursor-pointer font-medium"
+                    className={`flex items-center w-full p-4 cursor-pointer ${
+                      (formData[currentQuestion.dbField] as string[])?.includes(option.id)
+                        ? 'bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30'
+                        : 'bg-white/70 dark:bg-gray-800/70'
+                    }`}
                   >
-                    {option.label}
-                  </Label>
-                </div>
+                    <div className="flex items-center justify-center">
+                      <div className={`w-6 h-6 flex items-center justify-center rounded-md border-2 mr-3 ${
+                        (formData[currentQuestion.dbField] as string[])?.includes(option.id)
+                          ? 'border-purple-500 dark:border-purple-400 bg-purple-500 dark:bg-purple-400'
+                          : 'border-gray-300 dark:border-gray-600'
+                      }`}>
+                        {(formData[currentQuestion.dbField] as string[])?.includes(option.id) && (
+                          <motion.svg 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            className="h-4 w-4 text-white" 
+                            viewBox="0 0 20 20" 
+                            fill="currentColor"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                          >
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </motion.svg>
+                        )}
+                      </div>
+                      <Checkbox
+                        id={`${currentQuestion.id}-${option.id}`}
+                        checked={(formData[currentQuestion.dbField] as string[])?.includes(option.id) || false}
+                        onCheckedChange={(checked) => 
+                          handleMultiSelectChange(currentQuestion.id, option.id, checked as boolean, currentQuestion.dbField)
+                        }
+                        className="sr-only"
+                      />
+                      <span className="font-medium text-lg">{option.label}</span>
+                    </div>
+                  </label>
+                  
+                  {/* Animated highlight effect when selected */}
+                  {(formData[currentQuestion.dbField] as string[])?.includes(option.id) && (
+                    <motion.div 
+                      className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 dark:from-purple-500/20 dark:to-indigo-500/20"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  )}
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
         );
       
       default:
