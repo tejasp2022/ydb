@@ -76,6 +76,7 @@ declare module "@/data/content.json" {
       firstName: FormField;
       lastName: FormField;
     };
+    questions: Question[];
   }
 
   export interface FAQItem {
@@ -98,4 +99,16 @@ declare module "@/data/content.json" {
 
   const content: Content;
   export default content;
+}
+
+interface Question {
+  id?: string;
+  label: string;
+  placeholder?: string;
+  options?: Option[];
+}
+
+interface Option {
+  id: string;
+  label: string;
 } 

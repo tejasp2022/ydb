@@ -52,7 +52,7 @@ export function HowItWorksSection() {
 
   // Dynamic icon rendering helper
   const renderIcon = (iconName: string, className: string, color?: string) => {
-    // @ts-ignore - Using dynamic icon reference
+    // @ts-expect-error - Using dynamic icon reference
     const IconComponent = Icons[iconName];
     return IconComponent ? <IconComponent className={className} style={color ? {color} : {}} /> : null;
   };

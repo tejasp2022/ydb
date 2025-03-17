@@ -15,11 +15,11 @@ import { ArrowRight, ArrowLeft, Check, User, Mail, Briefcase, BookOpen, Clock } 
 
 // Create schema dynamically based on questions
 const formSchema = z.object({
-  firstName: z.string().min(1, content.waitlistForm.questions[0].errorMessage).optional(),
-  lastName: z.string().min(1, content.waitlistForm.questions[1].errorMessage).optional(),
-  vocation: z.string().min(1, content.waitlistForm.questions[2].errorMessage),
-  interests: z.array(z.string()).min(1, content.waitlistForm.questions[3].errorMessage),
-  podcastLength: z.string().min(1, content.waitlistForm.questions[4].errorMessage),
+  firstName: z.string().min(1, "First name is required").optional(),
+  lastName: z.string().min(1, "Last name is required").optional(), 
+  vocation: z.string().min(1, "Please select your vocation"),
+  interests: z.array(z.string()).min(1, "Please select at least one interest"),
+  podcastLength: z.string().min(1, "Please select preferred podcast length"),
 });
 
 export function WaitlistForm() {
@@ -30,9 +30,8 @@ export function WaitlistForm() {
   const [needsNameInput, setNeedsNameInput] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const supabase = createClientComponentClient();
-
   // Get questions for easy reference
-  const questions = content.waitlistForm.questions;
+  const questions = content.waitlistForm?.questions as Question[];
 
   useEffect(() => {
     // Only run auth check on the client side
@@ -331,7 +330,7 @@ export function WaitlistForm() {
                   <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
                     {questions[0].label}
                   </h2>
-                  <p className="text-gray-500 dark:text-gray-400 mb-6">We'll use this to personalize your experience</p>
+                  <p className="text-gray-500 dark:text-gray-400 mb-6">We&apos;ll use this to personalize your experience</p>
                   
                   <div className="relative">
                     <Input
@@ -412,7 +411,7 @@ export function WaitlistForm() {
                   <p className="text-gray-500 dark:text-gray-400 mb-6">This helps us tailor content to your professional context</p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {questions[2].options.map((vocation) => (
+                    {questions[2]?.options?.map((vocation: { id: string; label: string }) => (
                       <motion.div 
                         key={vocation.id} 
                         className={`flex items-center border-2 rounded-xl cursor-pointer p-5 transition-all
@@ -454,7 +453,7 @@ export function WaitlistForm() {
                           className="h-5 w-5"
                         />
                       </motion.div>
-                    ))}
+                    )) || []}
                   </div>
                   {form.formState.errors.vocation && (
                     <p className="text-sm text-red-500 mt-2">
@@ -476,14 +475,14 @@ export function WaitlistForm() {
                   <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
                     {questions[3].label}
                   </h2>
-                  <p className="text-gray-500 dark:text-gray-400 mb-6">Select topics you'd like to hear about in your daily briefing</p>
+                  <p className="text-gray-500 dark:text-gray-400 mb-6">Select topics you&apos;d like to hear about in your daily briefing</p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {questions[3].options.map((interest) => (
+                    {questions[3]?.options?.map((interest: { id: string; label: string }) => (
                       <motion.div 
                         key={interest.id} 
                         className={`flex items-center border-2 rounded-xl cursor-pointer p-5 transition-all
-                          ${(form.watch("interests") || []).includes(interest.id) 
+                          ${(form.watch("interests") || []).includes(interest.id)
                             ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20" 
                             : "border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700"}`}
                         whileHover={{ scale: 1.02, boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}
@@ -535,7 +534,7 @@ export function WaitlistForm() {
                           className="h-5 w-5"
                         />
                       </motion.div>
-                    ))}
+                    )) || []}
                   </div>
                   
                   {form.formState.errors.interests && (
@@ -571,7 +570,7 @@ export function WaitlistForm() {
                   <p className="text-gray-500 dark:text-gray-400 mb-6">Choose the length that fits best into your daily routine</p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {questions[4].options.map((option) => (
+                    {questions[4]?.options?.map((option: { id: string; label: string }) => (
                       <motion.div 
                         key={option.id} 
                         className={`flex items-center border-2 rounded-xl cursor-pointer p-5 transition-all
@@ -613,7 +612,7 @@ export function WaitlistForm() {
                           className="h-5 w-5"
                         />
                       </motion.div>
-                    ))}
+                    )) || []}
                   </div>
                   {form.formState.errors.podcastLength && (
                     <p className="text-sm text-red-500 mt-2">
