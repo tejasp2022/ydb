@@ -7,7 +7,7 @@
   },
   "howItWorksSection": {
     "title": "How It Works",
-    "description": "Select Brew transforms how you consume content by curating and delivering personalized audio from your favorite sources.",
+    "description": "Your Daily Briefing transforms how you consume content by curating and delivering personalized audio from your favorite sources.",
     "buttonText": "Join the Waitlist",
     "cards": [
       {
@@ -265,7 +265,7 @@
     ]
   },
   "faqSection": {
-    "title": "Frequently Asked Questions",
+    "title": "FAQ",
     "items": [
       {
         "question": "What makes this service different from just reading my favorite websites or newsletters?",

@@ -96,9 +96,13 @@ export function WaitlistSection() {
 
       <div className="container px-4 md:px-8 mx-auto relative z-10 w-full max-w-[1400px]">
         <div className="max-w-3xl mx-auto text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-            Get Exclusive Early Access to Your Daily Briefing
-          </h2>
+          <div className="inline-flex items-center justify-center mb-10">
+            <div className="h-[3px] w-32 md:w-48 bg-gradient-to-r from-transparent to-purple-500 dark:to-purple-400 mr-8"></div>
+            <span className="text-3xl md:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 uppercase tracking-wide">
+              Waitlist
+            </span>
+            <div className="h-[3px] w-32 md:w-48 bg-gradient-to-l from-transparent to-purple-500 dark:to-purple-400 ml-8"></div>
+          </div>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
             Join our waitlist and get early access to personalized podcasts that match your interests.
           </p>

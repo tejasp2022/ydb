@@ -21,6 +21,7 @@ import { motion } from "framer-motion";
 import HubSpokeAnimation from "@/components/HubSpokeAnimation";
 import content from "@/data/content.json";
 import * as Icons from "lucide-react";
+import { GeistSans } from 'geist/font/sans';
 
 const SpotifyIcon = () => (
   <svg 
@@ -58,14 +59,37 @@ export function HowItWorksSection() {
   };
 
   return (
-    <section className="py-16 bg-gray-50 dark:bg-gray-900" id="how-it-works">
+    <section className={`py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 ${GeistSans.className}`} id="how-it-works">
       <div className="container px-4 mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">{content.howItWorksSection.title}</h2>
-          <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            {content.howItWorksSection.description}
-          </p>
+        <div className="text-center mb-20 relative">
+          {/* Decorative elements */}
+          <div className="absolute -top-10 left-1/4 w-64 h-64 bg-purple-200/30 dark:bg-purple-900/20 rounded-full blur-3xl opacity-70 -z-10"></div>
+          <div className="absolute -top-5 right-1/4 w-48 h-48 bg-blue-200/30 dark:bg-blue-900/20 rounded-full blur-3xl opacity-70 -z-10"></div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+          >
+            <div className="inline-flex items-center justify-center mb-10">
+              <div className="h-[3px] w-32 md:w-48 bg-gradient-to-r from-transparent to-purple-500 dark:to-purple-400 mr-8"></div>
+              <span className="text-3xl md:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 uppercase tracking-wide">
+                How It Works
+              </span>
+              <div className="h-[3px] w-32 md:w-48 bg-gradient-to-l from-transparent to-purple-500 dark:to-purple-400 ml-8"></div>
+            </div>
+            
+            <motion.p 
+              className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+            >
+              {content.howItWorksSection.description}
+            </motion.p>
+          </motion.div>
         </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-6xl mx-auto mb-8 md:mb-12">
           {content.howItWorksSection.cards.map((card, index) => (
             <div
@@ -116,7 +140,7 @@ export function HowItWorksSection() {
           <Button 
             onClick={scrollToWaitlist}
             size="lg"
-            className="group"
+            className="group bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
           >
             {content.howItWorksSection.buttonText}
             <ArrowDown className="ml-2 h-4 w-4 group-hover:translate-y-1 transition-transform" />
