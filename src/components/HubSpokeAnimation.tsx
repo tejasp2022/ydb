@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState, useMemo, useId } from 'react';
 import { motion } from 'framer-motion';
+import content from "@/data/content.json";
 
 type NodeType = 'content' | 'output' | 'hub' | 'processing';
 
@@ -36,7 +37,7 @@ interface HubSpokeAnimationProps {
 const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
   contentNodes: propContentNodes,
   outputNodes: propOutputNodes,
-  hubIcon = '/logo.jpeg',
+  hubIcon = content.hubSpokeAnimation.hubIcon,
   radius = 250,
   useTechLogos = false,
   sparsity = 0.4, // Default to medium sparsity
@@ -47,6 +48,7 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
   const [isClient, setIsClient] = useState(false);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [segments, setSegments] = useState<AnimatedSegment[]>([]);
+  const [totalContentHeight, setTotalContentHeight] = useState(0);
   const animationRef = useRef<number | null>(null);
   
   // Mark component as client-side rendered after mount
@@ -67,29 +69,14 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
     return () => clearTimeout(initTimeout);
   }, []);
 
-  // Tech logos for the reference diagram style
-  const techContentNodes = [
-    { id: 'celery', icon: '/logos/celery.svg' },
-    { id: 'ai', icon: '/logos/ai.svg' },
-    { id: 'google', icon: '/logos/google.svg' },
-    { id: 'aws', icon: '/logos/aws.svg' },
-    { id: 'meta', icon: '/logos/meta.svg' },
-    { id: 'hf', icon: '/logos/huggingface.svg' },
-  ];
-
-  const techOutputNodes = [
-    { id: 'spotify', icon: '/icons/spotify-icon.png' },
-    { id: 'apple-music', icon: '/icons/apple-music-icon.png' },
-  ];
-
   // Use tech logos or provided nodes - memoize to prevent unnecessary re-renders
   const contentNodes = useMemo(() => 
-    useTechLogos ? techContentNodes : propContentNodes || [],
+    useTechLogos ? content.hubSpokeAnimation.techContentNodes : propContentNodes || content.hubSpokeAnimation.contentNodes,
     [useTechLogos, propContentNodes]
   );
   
   const outputNodes = useMemo(() => 
-    useTechLogos ? techOutputNodes : propOutputNodes || [],
+    useTechLogos ? content.hubSpokeAnimation.techOutputNodes : propOutputNodes || content.hubSpokeAnimation.outputNodes,
     [useTechLogos, propOutputNodes]
   );
 
@@ -136,23 +123,42 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
       position: { x: centerX, y: centerY }
     };
 
-    // Position content nodes on the left side with wider angle range
+    // Position content nodes vertically on the left side
     const contentNodeCount = contentNodes.length;
     
-    // Adjust angle ranges based on screen size
-    const contentAngleRange = isMobile ? 120 : 80; // Slightly narrower on desktop for more horizontal spread
-    const contentStartAngle = isMobile ? 120 : 140; // Adjusted for more horizontal spread
+    // Calculate the vertical spacing between content nodes
+    const contentVerticalSpacing = isMobile ? 
+      // Increased minimum spacing for mobile to prevent squishing
+      Math.min(Math.max(responsiveRadius.y * 2 / contentNodeCount, 60), 80) : 
+      Math.min(responsiveRadius.y * 1.8 / contentNodeCount, 90);
+    
+    // Calculate total height of all content nodes
+    const calculatedTotalContentHeight = contentVerticalSpacing * (contentNodeCount - 1);
+    
+    // Update the state with calculated height
+    setTotalContentHeight(calculatedTotalContentHeight);
+    
+    // Calculate starting Y position to center the nodes vertically
+    const contentStartY = centerY - calculatedTotalContentHeight / 2;
+    
+    // Fixed X position for all content nodes (aligned vertically)
+    // Move slightly more to the left on mobile to give more space
+    const contentX = centerX - (isMobile ? responsiveRadius.x * 1.1 : responsiveRadius.x * 0.9);
     
     const contentNodesWithPosition = contentNodes.map((node, index) => {
-      const angleStep = contentAngleRange / (contentNodeCount - 1 || 1);
-      const angle = (contentStartAngle + index * angleStep) * (Math.PI / 180);
+      // Calculate Y position based on index
+      const y = contentStartY + index * contentVerticalSpacing;
+      
+      // Calculate an angle for path drawing purposes (not for positioning)
+      // This helps maintain nice curves in the paths
+      const angle = Math.atan2(y - centerY, contentX - centerX);
       
       return {
         ...node,
         type: 'content' as NodeType,
         position: {
-          x: centerX + responsiveRadius.x * Math.cos(angle),
-          y: centerY + responsiveRadius.y * Math.sin(angle),
+          x: contentX,
+          y: y,
         },
         angle,
       };
@@ -208,6 +214,7 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
     
     // Add content-to-hub paths
     contentNodesList.forEach(contentNode => {
+        console.log(contentNode);
       allPaths.push({
         id: `path-${contentNode.id}-to-hub`,
         sourceNode: contentNode.id,
@@ -547,7 +554,7 @@ const HubSpokeAnimation: React.FC<HubSpokeAnimationProps> = ({
       style={{ 
         minHeight: isClient && typeof window !== 'undefined' 
           ? (window.innerWidth < 640 
-              ? Math.max(350, window.innerHeight * 0.6) // Taller on mobile
+              ? Math.max(400, window.innerHeight * 0.7, totalContentHeight + 120) // Increased minimum height on mobile
               : Math.max(radius * 2, 500) + 100)
           : 500, // Fallback height
         // Add max-width to ensure the diagram doesn't get too stretched on very wide screens

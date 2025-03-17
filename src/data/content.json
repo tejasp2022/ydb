@@ -1,0 +1,315 @@
+{
+  "heroSection": {
+    "launchDate": "2025-03-24T00:00:00",
+    "title": "Your Daily Briefing",
+    "description": "A personalized morning brew style podcast for inquisitive minds on the go. Launching in...",
+    "buttonText": "Learn More"
+  },
+  "howItWorksSection": {
+    "title": "How It Works",
+    "description": "Select Brew transforms how you consume content by curating and delivering personalized audio from your favorite sources.",
+    "buttonText": "Join the Waitlist",
+    "cards": [
+      {
+        "id": 1,
+        "title": "1. Choose Your Topics",
+        "description": "Select your interests and preferred news sources to create your personalized content feed.",
+        "icon": "Settings",
+        "details": {
+          "title": "Choose from various content sources:",
+          "items": [
+            {
+              "icon": "Twitter",
+              "label": "Twitter",
+              "color": "#1DA1F2"
+            },
+            {
+              "icon": "Linkedin",
+              "label": "LinkedIn",
+              "color": "#0A66C2"
+            },
+            {
+              "icon": "MessageSquare",
+              "label": "Reddit",
+              "color": "#FF4500"
+            },
+            {
+              "icon": "FileText",
+              "label": "RSS Feeds",
+              "color": "purple-600"
+            },
+            {
+              "icon": "Newspaper",
+              "label": "News",
+              "color": "purple-600"
+            },
+            {
+              "icon": "Radio",
+              "label": "Forums",
+              "color": "purple-600"
+            }
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "title": "2. AI Curation",
+        "description": "Our AI analyzes and summarizes the most relevant content, creating a concise briefing just for you.",
+        "icon": "Brain",
+        "details": {
+          "title": "AI-powered content processing:",
+          "items": [
+            {
+              "icon": "FileText",
+              "label": "Content Aggregation",
+              "color": "purple-600"
+            },
+            {
+              "icon": "Brain",
+              "label": "Smart Summarization",
+              "color": "purple-600"
+            },
+            {
+              "icon": "Sparkles",
+              "label": "Script Generation",
+              "color": "purple-600"
+            }
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "title": "3. Listen & Learn",
+        "description": "Start your day with a personalized audio briefing that keeps you informed and inspired.",
+        "icon": "Headphones",
+        "details": {
+          "title": "Delivery options:",
+          "items": [
+            {
+              "icon": "Podcast",
+              "label": "Multiple Podcast Platforms",
+              "color": "#8940FA"
+            },
+            {
+              "icon": "Music",
+              "label": "Customizable AI Voices",
+              "color": "purple-600"
+            },
+            {
+              "icon": "Clock",
+              "label": "Flexible Scheduling",
+              "color": "purple-600"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "hubSpokeAnimation": {
+    "hubIcon": "/logo.jpeg",
+    "contentNodes": [
+      {
+        "id": "twitter",
+        "icon": "/icons/twitter-icon.png"
+      },
+      {
+        "id": "reddit",
+        "icon": "/icons/reddit.png"
+      },
+      {
+        "id": "linkedin",
+        "icon": "/icons/linkedin-icon.png"
+      }
+    ],
+    "outputNodes": [
+      {
+        "id": "spotify",
+        "icon": "/icons/spotify-icon.png"
+      },
+      {
+        "id": "apple",
+        "icon": "/icons/apple-music-icon.png"
+      },
+      {
+        "id": "podcast",
+        "icon": "/icons/question-icon.png"
+      }
+    ],
+    "techContentNodes": [
+      {
+        "id": "medium",
+        "icon": "/icons/medium.png"
+      },
+      {
+        "id": "arxiv",
+        "icon": "/icons/arxiv.png"
+      },
+      {
+        "id": "reddit",
+        "icon": "/icons/reddit.png"
+      },
+      {
+        "id": "hacker_news",
+        "icon": "/icons/hacker_news.png"
+      },
+      {
+        "id": "x",
+        "icon": "/icons/x.png"
+      },
+      {
+        "id": "stocks",
+        "icon": "/icons/stocks.png"
+      }
+    ],
+    "techOutputNodes": [
+      {
+        "id": "spotify",
+        "icon": "/icons/spotify.png"
+      },
+      {
+        "id": "apple-music",
+        "icon": "/icons/apple_music.png"
+      }
+    ]
+  },
+  "waitlistForm": {
+    "successMessage": {
+      "title": "Thank you for signing up!",
+      "description": "We'll notify you when Your Daily Briefing launches."
+    },
+    "loginMessage": "Please sign in with Google to join the waitlist",
+    "loginButtonText": "Sign in with Google",
+    "formTitle": "Join the Waitlist",
+    "submitButtonText": "Join Waitlist",
+    "loadingText": "Signing up...",
+    "questions": [
+      {
+        "id": "firstName",
+        "type": "text",
+        "label": "First Name",
+        "placeholder": "Your first name",
+        "errorMessage": "First name is required"
+      },
+      {
+        "id": "lastName",
+        "type": "text",
+        "label": "Last Name",
+        "placeholder": "Your last name",
+        "errorMessage": "Last name is required"
+      },
+      {
+        "id": "vocation",
+        "type": "single-select",
+        "label": "What best describes you?",
+        "errorMessage": "Please select your vocation",
+        "options": [
+          {
+            "id": "student",
+            "label": "Student"
+          },
+          {
+            "id": "academic",
+            "label": "Academic"
+          },
+          {
+            "id": "professional",
+            "label": "Professional"
+          },
+          {
+            "id": "other",
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "interests",
+        "type": "multi-select",
+        "label": "What topics are you interested in?",
+        "errorMessage": "Please select at least one interest",
+        "options": [
+          {
+            "id": "technology",
+            "label": "Technology"
+          },
+          {
+            "id": "business",
+            "label": "Business"
+          },
+          {
+            "id": "science",
+            "label": "Science"
+          },
+          {
+            "id": "politics",
+            "label": "Politics"
+          },
+          {
+            "id": "arts",
+            "label": "Arts & Culture"
+          },
+          {
+            "id": "sports",
+            "label": "Sports"
+          }
+        ]
+      },
+      {
+        "id": "podcastLength",
+        "type": "single-select",
+        "label": "Preferred podcast length?",
+        "errorMessage": "Please select your preferred podcast length",
+        "options": [
+          {
+            "id": "short",
+            "label": "5-10 minutes"
+          },
+          {
+            "id": "medium",
+            "label": "10-20 minutes"
+          },
+          {
+            "id": "long",
+            "label": "20-30 minutes"
+          }
+        ]
+      }
+    ]
+  },
+  "faqSection": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      {
+        "question": "What makes this service different from just reading my favorite websites or newsletters?",
+        "answer": "While you could visit each source individually, this service aggregates and curates content specifically for you, saving time and effort. Instead of browsing multiple feeds, you get a concise, digestible audio briefing tailored to your interests—perfect for busy mornings or commutes."
+      },
+      {
+        "question": "How do you ensure the quality and credibility of the content?",
+        "answer": "Our system uses advanced AI algorithms to select reputable sources and prioritize high-quality content. Additionally, the curated script undergoes smart summarization to capture essential insights while reducing noise, ensuring you receive accurate and meaningful updates."
+      },
+      {
+        "question": "Isn't this just repackaging content that's already available?",
+        "answer": "In a way, yes—but the value lies in personalization. We transform scattered content into a coherent narrative that's customized for each user. This unique synthesis allows you to hear just what matters to you without the hassle of filtering through irrelevant information."
+      },
+      {
+        "question": "How accurate is the personalization? What if the content doesn't match my interests?",
+        "answer": "We continuously refine our algorithms based on user feedback and engagement. Early iterations might not be perfect, but as you interact with the service—by adjusting your content sources and providing feedback—the system learns to better tailor the content to your exact preferences."
+      },
+      {
+        "question": "Can I trust an AI-generated voice to deliver content naturally?",
+        "answer": "Advances in text-to-speech technology, such as those from Eleven Labs, have made AI voices sound remarkably natural and engaging. We're committed to using state-of-the-art tools to ensure the audio experience feels both conversational and pleasant to listen to."
+      },
+      {
+        "question": "How do you handle potential biases in content selection?",
+        "answer": "Our approach emphasizes diversity by drawing from multiple sources. We also incorporate mechanisms for users to flag content that doesn't align with their preferences or seems biased, ensuring that the system adapts and maintains balanced curation over time."
+      },
+      {
+        "question": "What about my data privacy and security?",
+        "answer": "User privacy is paramount. We only use your preferences to tailor your experience and do not share personal data with third parties. Security measures and encryption protocols are implemented to protect your data at every stage of the process."
+      },
+      {
+        "question": "Why should I pay for this service when there are free alternatives?",
+        "answer": "A paid subscription model ensures continuous improvement, high-quality personalization, and an ad-free, seamless experience. The value comes from the time saved and the convenience of having a curated, daily briefing that fits into your lifestyle—benefits that free services may not offer."
+      }
+    ]
+  }
+}

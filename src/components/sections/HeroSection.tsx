@@ -6,6 +6,7 @@ import { ArrowDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { FC, useEffect, useState, useRef } from "react";
 import Image from 'next/image';
+import content from "@/data/content.json";
 
 interface TimeLeft {
   days: number;
@@ -15,7 +16,7 @@ interface TimeLeft {
 }
 
 const calculateTimeLeft = (): TimeLeft => {
-  const launchDate = new Date('2025-03-24T00:00:00').getTime();
+  const launchDate = new Date(content.heroSection.launchDate).getTime();
   const now = new Date().getTime();
   const difference = launchDate - now;
 
@@ -251,7 +252,7 @@ export function HeroSection() {
                   filter: "url(#distressFilter)"
                 }}
             >
-              Your Daily Briefing
+              {content.heroSection.title}
             </h1>
             
             <svg width="0" height="0" className="absolute">
@@ -269,7 +270,7 @@ export function HeroSection() {
             transition={{ delay: 0.6, duration: 0.7 }}
             className="text-xl md:text-3xl font-semibold mb-14 max-w-3xl mx-auto relative bg-clip-text text-transparent bg-gradient-to-r from-gray-700 to-gray-900 dark:from-gray-300 dark:to-gray-100"
           >
-            A personalized morning brew style podcast, launching in...
+            {content.heroSection.description}
           </motion.p>
 
           <motion.div 
@@ -300,7 +301,7 @@ export function HeroSection() {
               className="group hover:scale-101 transition-all duration-300 text-white bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 shadow-sm hover:shadow-purple-500/20 text-sm md:text-base px-6 py-3 md:py-4 h-auto rounded-full font-medium border border-white/20 backdrop-blur-sm"
               onClick={scrollToHowItWorks}
             >
-              <span className="relative z-10">Learn More</span>
+              <span className="relative z-10">{content.heroSection.buttonText}</span>
               <ArrowDown className="ml-1 h-3 w-3 md:h-4 md:w-4 group-hover:translate-y-0.5 transition-transform duration-300 ease-in-out" />
               <span className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-600/20 to-blue-600/20 blur-sm group-hover:blur-md transition-all duration-300"></span>
             </Button>
