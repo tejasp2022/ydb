@@ -1,0 +1,14 @@
+{
+    "builds": [
+        {
+            "src": "landing_page/package.json",
+            "use": "@vercel/next"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "landing_page/$1"
+        }
+    ]
+}
