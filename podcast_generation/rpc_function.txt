@@ -1,0 +1,26 @@
+-- Create a function to execute SQL queries dynamically
+-- Note: This has security implications, so use with caution
+CREATE OR REPLACE FUNCTION postgres_query(query text)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER -- Runs with the privileges of the function creator
+AS $$
+DECLARE
+  result JSONB;
+BEGIN
+  EXECUTE query;
+  result := '{"success": true}'::JSONB;
+  RETURN result;
+EXCEPTION WHEN OTHERS THEN
+  result := jsonb_build_object(
+    'success', false,
+    'error', SQLERRM,
+    'detail', SQLSTATE
+  );
+  RETURN result;
+END;
+$$;
+
+-- Grant access to the function for the authenticated role
+GRANT EXECUTE ON FUNCTION postgres_query TO authenticated;
+GRANT EXECUTE ON FUNCTION postgres_query TO service_role;
