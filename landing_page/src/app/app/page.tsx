@@ -194,6 +194,25 @@ export default function InterestsPage() {
     setShowNoResultsPrompt(!hasResults)
     return hasResults
   }
+  
+  // Get filtered interests based on search query for the search results popup
+  const filteredInterests = (() => {
+    if (!searchQuery.trim()) return [];
+    
+    const query = searchQuery.toLowerCase();
+    const results: string[] = [];
+    
+    interestCategories.forEach(category => {
+      category.subcategories.forEach(interest => {
+        if (interest.toLowerCase().includes(query) && 
+            !results.includes(interest)) {
+          results.push(interest);
+        }
+      });
+    });
+    
+    return results.slice(0, 10); // Limit to 10 results for performance
+  })()
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -223,42 +242,78 @@ export default function InterestsPage() {
             transition={{ duration: 0.4, ease: "easeInOut" }}
             className="absolute inset-0 bg-white overflow-y-auto"
           >
-            <div className="min-h-full flex flex-col items-center px-4 md:px-8 py-6 md:py-10 pb-20 md:pb-24 relative">
-              <h1 className="font-sans text-purple-700 text-3xl md:text-6xl font-bold mb-4 md:mb-8 text-center tracking-tight">
+            <div className="min-h-full flex flex-col items-center px-4 md:px-8 py-6 md:py-10 pb-32 md:pb-40 relative">
+              <h1 className="font-sans text-purple-700 text-3xl md:text-6xl font-bold mb-4 md:mb-6 text-center tracking-tight">
                 What are you interested in?
               </h1>
               
-              <div className="w-full max-w-lg mb-3 md:mb-4">
-                <div className="relative flex gap-2">
-                  <div className="relative flex-grow">
-                    <input
-                      ref={searchInputRef}
-                      type="text"
-                      value={searchQuery}
-                      onChange={handleSearch}
-                      onKeyDown={handleSearchKeyDown}
-                      placeholder="Search or add interests..."
-                      className="font-sans w-full p-4 pl-12 rounded-lg border-2 border-purple-300 focus:border-purple-700 focus:outline-none text-lg"
-                    />
-                    <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-purple-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </div>
-                  {searchQuery.trim() !== '' && (
-                    <button
-                      onClick={() => handleAddCustomTopic(searchQuery)}
-                      disabled={allSelections.length >= 5}
-                      className="bg-purple-700 text-white w-10 h-10 rounded-full flex items-center justify-center transition-all hover:bg-purple-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                      aria-label="Add custom interest"
-                      title="Add custom interest"
+              {/* User Selections at the top */}
+              <div className="w-full max-w-lg mb-4 md:mb-6 sticky top-0 z-20 bg-white pb-2">
+                <AnimatePresence>
+                  {(selectedInterests.length > 0 || customTopics.length > 0) && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden rounded-lg bg-purple-50 p-3 border border-purple-100 shadow-sm"
                     >
-                      <Plus size={20} />
-                    </button>
+                      <motion.h2 
+                        className="font-sans text-purple-700 text-lg font-semibold mb-2 tracking-tight"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        Your Selections:
+                      </motion.h2>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedInterests.map((interest) => (
+                          <motion.span 
+                            key={interest} 
+                            className="bg-purple-100 text-purple-700 px-3 py-1 rounded-md font-sans font-medium flex items-center gap-1"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.15 }}
+                          >
+                            {interest}
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedInterests(prev => prev.filter(item => item !== interest));
+                              }}
+                              className="ml-1 hover:text-purple-500 transition-colors"
+                            >
+                              <X size={14} />
+                            </button>
+                          </motion.span>
+                        ))}
+                        {customTopics.map((topic) => (
+                          <motion.span 
+                            key={`custom-${topic}`} 
+                            className="bg-purple-200 text-purple-800 px-3 py-1 rounded-md font-sans font-medium flex items-center gap-1"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.15 }}
+                          >
+                            {topic}
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCustomTopics(prev => prev.filter(item => item !== topic));
+                              }}
+                              className="ml-1 hover:text-purple-500 transition-colors"
+                            >
+                              <X size={14} />
+                            </button>
+                          </motion.span>
+                        ))}
+                      </div>
+                    </motion.div>
                   )}
-                </div>
+                </AnimatePresence>
               </div>
               
-              <div className="w-full max-w-lg flex-grow overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-purple-50 rounded-lg mb-4">
+              <div className="w-full max-w-lg flex-grow overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-purple-50 rounded-lg mb-4 pb-32 md:pb-40">
                 {/* No results prompt with add button */}
                 <AnimatePresence>
                   {showNoResultsPrompt && (
@@ -337,75 +392,71 @@ export default function InterestsPage() {
               })}
               </div>
               
-              <div className="w-full max-w-3xl" style={{ minHeight: (selectedInterests.length > 0 || customTopics.length > 0) ? 'auto' : '0' }}>
+              {/* Removed old selections section */}
+              
+              {/* Search moved to bottom, above the submit button */}
+              <div className="fixed bottom-16 left-0 right-0 md:fixed md:bottom-20 md:left-1/2 md:transform md:-translate-x-1/2 md:w-96 z-30 px-4 md:px-0">
+                {/* Search results popup */}
                 <AnimatePresence>
-                  {(selectedInterests.length > 0 || customTopics.length > 0) && (
+                  {searchQuery.trim() !== '' && filteredInterests.length > 0 && (
                     <motion.div 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.5, ease: [0.04, 0.62, 0.23, 0.98] }}
-                      className="overflow-hidden fixed bottom-0 left-0 right-0 bg-white pt-2 px-4 md:px-8 border-t border-purple-100 md:static md:border-0 md:pt-0 md:px-0 z-10 pb-16 md:pb-0 max-h-[30vh] md:max-h-none overflow-y-auto"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-purple-100 max-h-[40vh] overflow-y-auto"
                     >
-                      <motion.h2 
-                        className="font-sans text-purple-700 text-xl font-semibold mb-3 tracking-tight"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.3, delay: 0.2 }}
-                      >
-                        Your Selections:
-                      </motion.h2>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedInterests.map((interest) => (
-                          <motion.span 
-                            key={interest} 
-                            className="bg-purple-100 text-purple-700 px-3 py-1 rounded-md font-sans font-medium flex items-center gap-1"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.15 }}
-                          >
-                            {interest}
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedInterests(prev => prev.filter(item => item !== interest));
-                              }}
-                              className="ml-1 hover:text-purple-500 transition-colors"
+                      <div className="p-3">
+                        <h3 className="text-sm font-medium text-purple-600 mb-2">Search Results:</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {filteredInterests.map(interest => (
+                            <button
+                              key={interest}
+                              onClick={() => handleInterestClick(interest)}
+                              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${selectedInterests.includes(interest) ? 'bg-purple-200 text-purple-800' : 'bg-purple-50 text-purple-700 hover:bg-purple-100'}`}
                             >
-                              <X size={14} />
+                              {interest}
                             </button>
-                          </motion.span>
-                        ))}
-                        {customTopics.map((topic) => (
-                          <motion.span 
-                            key={`custom-${topic}`} 
-                            className="bg-purple-200 text-purple-800 px-3 py-1 rounded-md font-sans font-medium flex items-center gap-1"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.15 }}
-                          >
-                            {topic}
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setCustomTopics(prev => prev.filter(t => t !== topic));
-                              }}
-                              className="ml-1 hover:text-purple-500 transition-colors"
-                            >
-                              <X size={14} />
-                            </button>
-                          </motion.span>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
+                <div className="bg-white/90 backdrop-blur-md p-2 rounded-lg shadow-lg border border-purple-100">
+                  <div className="relative flex gap-2 w-full">
+                  <div className="relative flex-grow">
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      value={searchQuery}
+                      onChange={handleSearch}
+                      onKeyDown={handleSearchKeyDown}
+                      placeholder="Search or add interests..."
+                      className="font-sans w-full p-4 pl-12 rounded-lg border-2 border-purple-300 focus:border-purple-700 focus:outline-none text-lg shadow-lg bg-white/95 backdrop-blur-sm"
+                    />
+                    <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-purple-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  {searchQuery.trim() !== '' && (
+                    <button
+                      onClick={() => handleAddCustomTopic(searchQuery)}
+                      disabled={allSelections.length >= 5}
+                      className="bg-purple-700 text-white w-10 h-10 rounded-full flex items-center justify-center transition-all hover:bg-purple-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                      aria-label="Add custom interest"
+                      title="Add custom interest"
+                    >
+                      <Plus size={20} />
+                    </button>
+                  )}
+                  </div>
+                </div>
               </div>
               
               <button 
                 onClick={handleNext} 
                 disabled={isSubmitting || allSelections.length === 0}
-                className="fixed bottom-0 left-0 right-0 md:fixed md:bottom-8 md:left-1/2 md:transform md:-translate-x-1/2 md:w-auto bg-purple-700 text-white px-8 py-3 md:rounded-lg font-bold text-lg flex items-center justify-center gap-2 z-20 shadow-lg disabled:bg-purple-400 disabled:cursor-not-allowed"
+                className="fixed bottom-0 left-0 right-0 md:fixed md:bottom-8 md:left-1/2 md:transform md:-translate-x-1/2 md:w-auto bg-purple-700 text-white px-8 py-3 md:rounded-lg font-bold text-lg flex items-center justify-center gap-2 z-40 shadow-lg disabled:bg-purple-400 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit'} {!isSubmitting && <ChevronRight className="h-5 w-5" />}
               </button>
@@ -422,7 +473,7 @@ export default function InterestsPage() {
             transition={{ duration: 0.4, ease: "easeInOut" }}
             className="absolute inset-0 bg-white overflow-y-auto"
           >
-            <div className="min-h-full flex flex-col items-center px-4 md:px-8 py-6 md:py-10 pb-20 md:pb-24 relative">
+            <div className="min-h-full flex flex-col items-center px-4 md:px-8 py-6 md:py-10 pb-32 md:pb-40 relative">
               <div className="relative w-full max-w-2xl">
                 <button 
                   onClick={handleBack} 
