@@ -1,3 +1,11 @@
 openai
 fastapi[standard]
-uv
+uvicorn
+python-multipart
+supabase
+sqlalchemy
+psycopg2-binary
+python-dotenv
+pydantic
+httpx
+requests
