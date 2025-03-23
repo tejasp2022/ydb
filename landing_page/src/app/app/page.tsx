@@ -149,10 +149,8 @@ export default function InterestsPage() {
     if (query.trim() === '') {
       setShowNoResultsPrompt(false)
       setExpandedCategory(null)
-    } else {
-      // Auto-expand matching categories
-      autoExpandMatchingCategory(query)
     }
+    // We no longer auto-expand categories when searching since we have the search suggestions popup
   }
   
   // Function to auto-expand categories that match the search
@@ -266,47 +264,66 @@ export default function InterestsPage() {
                       >
                         Your Selections:
                       </motion.h2>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedInterests.map((interest) => (
-                          <motion.span 
-                            key={interest} 
-                            className="bg-purple-100 text-purple-700 px-3 py-1 rounded-md font-sans font-medium flex items-center gap-1"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.15 }}
-                          >
-                            {interest}
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedInterests(prev => prev.filter(item => item !== interest));
-                              }}
-                              className="ml-1 hover:text-purple-500 transition-colors"
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-wrap gap-2">
+                          {selectedInterests.map((interest) => (
+                            <motion.span 
+                              key={interest} 
+                              className="bg-purple-100 text-purple-700 px-3 py-1 rounded-md font-sans font-medium flex items-center gap-1"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ duration: 0.15 }}
                             >
-                              <X size={14} />
-                            </button>
-                          </motion.span>
-                        ))}
-                        {customTopics.map((topic) => (
-                          <motion.span 
-                            key={`custom-${topic}`} 
-                            className="bg-purple-200 text-purple-800 px-3 py-1 rounded-md font-sans font-medium flex items-center gap-1"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.15 }}
-                          >
-                            {topic}
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setCustomTopics(prev => prev.filter(item => item !== topic));
-                              }}
-                              className="ml-1 hover:text-purple-500 transition-colors"
+                              {interest}
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedInterests(prev => prev.filter(item => item !== interest));
+                                }}
+                                className="ml-1 hover:text-purple-500 transition-colors"
+                              >
+                                <X size={14} />
+                              </button>
+                            </motion.span>
+                          ))}
+                          {customTopics.map((topic) => (
+                            <motion.span 
+                              key={`custom-${topic}`} 
+                              className="bg-purple-200 text-purple-800 px-3 py-1 rounded-md font-sans font-medium flex items-center gap-1"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ duration: 0.15 }}
                             >
-                              <X size={14} />
+                              {topic}
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCustomTopics(prev => prev.filter(item => item !== topic));
+                                }}
+                                className="ml-1 hover:text-purple-500 transition-colors"
+                              >
+                                <X size={14} />
+                              </button>
+                            </motion.span>
+                          ))}
+                        </div>
+                        
+                        {/* Submit button in the selections pane */}
+                        {allSelections.length > 0 && (
+                          <motion.div 
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex justify-end"
+                          >
+                            <button
+                              onClick={handleNext}
+                              disabled={isSubmitting || allSelections.length === 0}
+                              className="bg-purple-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-1 hover:bg-purple-800 transition-colors shadow-sm disabled:bg-purple-400 disabled:cursor-not-allowed"
+                            >
+                              {isSubmitting ? 'Generating...' : 'Generate my briefing'} {!isSubmitting && <ChevronRight className="h-4 w-4" />}
                             </button>
-                          </motion.span>
-                        ))}
+                          </motion.div>
+                        )}
                       </div>
                     </motion.div>
                   )}
@@ -335,16 +352,6 @@ export default function InterestsPage() {
                 </AnimatePresence>
                 
                 {interestCategories.map((category) => {
-                  // Filter based on search query
-                  if (searchQuery.trim() !== '') {
-                    const query = searchQuery.toLowerCase();
-                    const categoryMatches = category.name.toLowerCase().includes(query);
-                    const subcategoryMatches = category.subcategories.some(
-                      sub => sub.toLowerCase().includes(query)
-                    );
-                    
-                    if (!categoryMatches && !subcategoryMatches) return null;
-                  }
                   
                   return (
                   <div key={category.name} className="mb-4">
@@ -394,8 +401,8 @@ export default function InterestsPage() {
               
               {/* Removed old selections section */}
               
-              {/* Search moved to bottom, above the submit button */}
-              <div className="fixed bottom-16 left-0 right-0 md:fixed md:bottom-20 md:left-1/2 md:transform md:-translate-x-1/2 md:w-96 z-30 px-4 md:px-0">
+              {/* Search container */}
+              <div className="fixed bottom-6 left-0 right-0 md:fixed md:bottom-8 md:left-0 md:right-0 md:px-8 z-30 px-4">
                 {/* Search results popup */}
                 <AnimatePresence>
                   {searchQuery.trim() !== '' && filteredInterests.length > 0 && (
@@ -403,7 +410,7 @@ export default function InterestsPage() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-purple-100 max-h-[40vh] overflow-y-auto"
+                      className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-purple-100 max-h-[40vh] overflow-y-auto md:max-w-xl md:mx-auto"
                     >
                       <div className="p-3">
                         <h3 className="text-sm font-medium text-purple-600 mb-2">Search Results:</h3>
@@ -422,9 +429,9 @@ export default function InterestsPage() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-                <div className="bg-white/90 backdrop-blur-md p-2 rounded-lg shadow-lg border border-purple-100">
-                  <div className="relative flex gap-2 w-full">
-                  <div className="relative flex-grow">
+                <div className="bg-white/90 backdrop-blur-md p-2 rounded-lg shadow-lg border border-purple-100 md:max-w-xl md:mx-auto">
+                  <div className="relative flex gap-2 w-full md:flex-grow items-center">
+                  <div className="relative flex-grow">    
                     <input
                       ref={searchInputRef}
                       type="text"
@@ -432,11 +439,20 @@ export default function InterestsPage() {
                       onChange={handleSearch}
                       onKeyDown={handleSearchKeyDown}
                       placeholder="Search or add interests..."
-                      className="font-sans w-full p-4 pl-12 rounded-lg border-2 border-purple-300 focus:border-purple-700 focus:outline-none text-lg shadow-lg bg-white/95 backdrop-blur-sm"
+                      className="font-sans w-full p-4 pl-12 pr-10 rounded-lg border-2 border-purple-300 focus:border-purple-700 focus:outline-none text-lg shadow-lg bg-white/95 backdrop-blur-sm"
                     />
                     <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-purple-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
+                    {searchQuery.trim() !== '' && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        aria-label="Clear search"
+                      >
+                        <X size={18} />
+                      </button>
+                    )}
                   </div>
                   {searchQuery.trim() !== '' && (
                     <button
@@ -450,16 +466,12 @@ export default function InterestsPage() {
                     </button>
                   )}
                   </div>
+                  
+
                 </div>
               </div>
               
-              <button 
-                onClick={handleNext} 
-                disabled={isSubmitting || allSelections.length === 0}
-                className="fixed bottom-0 left-0 right-0 md:fixed md:bottom-8 md:left-1/2 md:transform md:-translate-x-1/2 md:w-auto bg-purple-700 text-white px-8 py-3 md:rounded-lg font-bold text-lg flex items-center justify-center gap-2 z-40 shadow-lg disabled:bg-purple-400 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit'} {!isSubmitting && <ChevronRight className="h-5 w-5" />}
-              </button>
+
             </div>
           </motion.div>
         )}
@@ -544,7 +556,7 @@ export default function InterestsPage() {
                     <button
                       onClick={handleSubmit}
                       disabled={isSubmitting || allSelections.length === 0}
-                      className="bg-purple-700 hover:bg-purple-800 text-white rounded-full p-3 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                      className="bg-purple-700 hover:bg-purple-800 text-white rounded-full p-3 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 md:hidden"
                       aria-label="Submit interests"
                     >
                       {isSubmitting ? (
@@ -554,6 +566,8 @@ export default function InterestsPage() {
                       )}
                     </button>
                   </div>
+                  
+
                 </div>
               </div>
             </div>
