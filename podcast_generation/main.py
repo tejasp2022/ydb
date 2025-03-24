@@ -1,27 +1,37 @@
-# main.py
 from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
-from database import get_db_session, engine, Base
-from models.models import User, Interest, Podcast
-from services import interests, podcasts
+from supabase_client import supabase_client
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
-
-# Initialize tables
-Base.metadata.create_all(bind=engine)
-
+from fastapi.middleware.cors import CORSMiddleware
+from db_operations import update_user_interests
 app = FastAPI()
 
-class InterestCreate(BaseModel):
-    description: str
+class InterestsRequest(BaseModel):
+    interests: list[str]
 
-@app.post("/users/{user_id}/interests")
-def add_interest_to_user(user_id: int, interest: InterestCreate, db: Session = Depends(get_db_session)):
-    # Implementation as before
-    pass
+@app.post("/update-interests")
+def update_interests(request: InterestsRequest, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+    try:
+        token = credentials.credentials
+        user = supabase_client.auth.get_user(jwt=token)
+        if not user:
+            raise HTTPException(status_code=401, detail="User not authenticated")
+        
+        user_id = user.user.id
+        interests = request.interests
+    
+        result = update_user_interests(user_id, interests)
+        
+        return result
+        
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=422, detail=f"Failed to update interests: {str(e)}")
 
-@app.get("/users/{user_id}/podcasts")
-def get_user_podcasts(user_id: int, db: Session = Depends(get_db_session)):
-    podcasts = db.query(Podcast).filter(Podcast.user_id == user_id).all()
-    return [{"podcast_id": p.podcast_id, "audio_url": p.audio_blob_url} for p in podcasts]
-
-# Add your other API endpoints here
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],            
+    allow_headers=["*"],
+)
