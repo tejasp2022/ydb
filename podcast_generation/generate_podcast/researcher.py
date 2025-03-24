@@ -25,13 +25,13 @@ async def generate_research(interests):
             {"role": "system", "content": """
             You are a researcher who generates research for a daily news podcast based on a list of interests.
             Given a list of interests, research the most significant events of the previous day for that topic.
-            Provide enough information to create a 20 minute podcast episode covering the most important events across all topics.
+            Provide enough information to create a podcast episode covering the most important events across all topics.
             The list of interests may not be related to each other. Please generate research for each interest separately.
             We will use this research to create a podcast later.
 
             There should be enough research so that we do not have to look anywhere else for information, and can create an interesting podcast episode.
 
-            Provide as much detail as possible!
+            Provide as much research as possible! Go as in depth as you can so we can create a great script
             """},
             {"role": "user", "content": f"Generate research based on the following interests: {interests}"}
         ],

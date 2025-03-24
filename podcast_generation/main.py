@@ -4,15 +4,19 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from db_operations import update_user_interests
+from generate_podcast.researcher import generate_research
+import asyncio
+
 app = FastAPI()
 
 class InterestsRequest(BaseModel):
     interests: list[str]
 
 @app.post("/update-interests")
-def update_interests(request: InterestsRequest, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+async def update_interests(request: InterestsRequest, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     try:
         token = credentials.credentials
+        print("token: ", token)
         user = supabase_client.auth.get_user(jwt=token)
         if not user:
             raise HTTPException(status_code=401, detail="User not authenticated")
@@ -24,13 +28,17 @@ def update_interests(request: InterestsRequest, credentials: HTTPAuthorizationCr
     
         result = update_user_interests(user_id, interests)
 
-        generate_research(interests)
+        # Fire and forget - don't wait for completion
+        asyncio.create_task(start_podcast_pipeline(interests))
         
         return result
         
     except Exception as e:
         print(e)
         raise HTTPException(status_code=422, detail=f"Failed to update interests: {str(e)}")
+
+async def start_podcast_pipeline(interests: list[str]):
+    await generate_research(interests)
 
 app.add_middleware(
     CORSMiddleware,
