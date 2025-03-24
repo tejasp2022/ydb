@@ -26,7 +26,7 @@ def update_user_interests(user_id: str, interests: List[str]) -> Dict[str, Any]:
     }
     
     try:
-        result = supabase_client.table("user_interests").upsert(data).execute()
+        result = supabase_client.table("interests").upsert(data).execute()
         if not result.data:
             raise HTTPException(status_code=500, detail="Failed to update interests in database")
         

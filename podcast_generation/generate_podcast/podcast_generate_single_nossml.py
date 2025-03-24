@@ -61,7 +61,7 @@ def generate_standard_audio(text):
     )
     
     # Save the audio to a file
-    output_file = "podcast_aoede.mp3"
+    output_file = "podcast_end_to_end.mp3"
     with open(output_file, "wb") as out:
         out.write(response.audio_content)
         print(f"Generated podcast saved to '{output_file}'")

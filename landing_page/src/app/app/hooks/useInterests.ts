@@ -1,5 +1,7 @@
-import { useState, useRef, KeyboardEvent } from 'react';
+import { useState, useRef, KeyboardEvent, useEffect } from 'react';
 import { interestCategories } from '../data/interestCategories';
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { Session } from '@supabase/supabase-js';
 
 export const useInterests = () => {
   const [currentSection, setCurrentSection] = useState<'interests' | 'next' | 'celebration'>('interests');
@@ -11,8 +13,28 @@ export const useInterests = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [showNoResultsPrompt, setShowNoResultsPrompt] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const supabase = createClientComponentClient();
+
+  // Initialize and set up Supabase auth listener
+  useEffect(() => {
+    // Get the initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    // Set up listener for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    // Clean up subscription when component unmounts
+    return () => subscription.unsubscribe();
+  }, [supabase.auth]);
 
   // Combine all selected interests and custom topics
   const allSelections = [...selectedInterests, ...customTopics];
@@ -50,11 +72,16 @@ export const useInterests = () => {
     setIsSubmitting(true);
     
     try {
-      // Submit interests to API
-      const response = await fetch('/api/submit-interests', {
+      // Get token from supabase client
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      
+      // Submit interests to API at 127.0.0.1:8000/update-interests
+      const response = await fetch('http://127.0.0.1:8000/update-interests', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           interests: allSelections
@@ -62,13 +89,13 @@ export const useInterests = () => {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to submit interests');
+        throw new Error('Failed to update interests');
       }
       
       // Navigate to celebration screen
       setCurrentSection('celebration');
     } catch (error) {
-      console.error('Error submitting interests:', error);
+      console.error('Error updating interests:', error);
       // You could add error handling UI here
     } finally {
       setIsSubmitting(false);

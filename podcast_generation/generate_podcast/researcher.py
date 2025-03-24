@@ -2,6 +2,7 @@
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
+from db_operations import create_research
 
 load_dotenv()
 
@@ -46,10 +47,15 @@ def generate_research(interests):
             full_content += content_delta
     
     print("\n\nResearch generation complete.")
+
+    save_research_to_file(full_content)
+
+    generate_script(full_content)
+
     return full_content
 
 
-def save_research_to_file(content, filename="research_output.md"):
+def save_research_to_file(content, filename="research_output.txt"):
     """Save the generated research to a file."""
     with open(filename, "w") as f:
         f.write("# Research Output\n\n")
@@ -59,5 +65,3 @@ def save_research_to_file(content, filename="research_output.md"):
 
 if __name__ == "__main__":
     research_content = generate_research(interests)
-    # Optionally save the research to a file
-    save_research_to_file(research_content)
