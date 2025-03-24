@@ -5,7 +5,7 @@ from google.auth import default
 from google.cloud import texttospeech
 from google.cloud import texttospeech_v1beta1 as texttospeech_long
 
-def generate_podcast():
+async def generate_podcast():
     credentials, project = default()
     
     # Read the text from the podcast.txt file
@@ -24,9 +24,9 @@ def generate_podcast():
         generate_long_audio(text)
     else:
         print("Using standard Text-to-Speech API...")
-        generate_standard_audio(text)
+        await generate_standard_audio(text)
 
-def generate_standard_audio(text):
+async def generate_standard_audio(text):
     """Generate audio using the standard Text-to-Speech API for shorter content."""
     credentials, project = default()
     client = texttospeech.TextToSpeechClient(credentials=credentials)
@@ -35,8 +35,8 @@ def generate_standard_audio(text):
     input_text = texttospeech.SynthesisInput(text=text)
     print("Using plain text for speech synthesis")
     
-    # name = "en-US-Chirp3-HD-Fenrir"  # Using a high-definition voice model
-    name = "en-US-Chirp3-HD-Aoede"  # Using a HD voice model
+    name = "en-US-Chirp3-HD-Fenrir"  # Using a high-definition voice model
+    # name = "en-US-Chirp3-HD-Aoede"  # Using a HD voice model
     # Configure voice parameters
     voice = texttospeech.VoiceSelectionParams(
         language_code="en-US",
@@ -87,7 +87,7 @@ def generate_long_audio(text):
     # Note: Not all voices available in standard API are available in Long Audio API
     voice = texttospeech_long.VoiceSelectionParams(
         language_code="en-US",
-        name="en-US-Chirp3-HD-Aoede"  # Using a neural voice model suitable for long audio
+        name="en-US-Chirp3-HD-Fenrir"  # Using a neural voice model suitable for long audio
     )
     
     # Configure audio parameters
@@ -134,4 +134,9 @@ def generate_long_audio(text):
         print(f"Operation name to check: {operation.operation.name}")
 
 if __name__ == "__main__":
-    generate_podcast()
+    import asyncio
+    # open script.txt and read into a string
+    # It is in the outer directory
+    with open("../script.txt", "r") as f:
+        script = f.read()
+    asyncio.run(generate_standard_audio(script))
