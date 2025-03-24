@@ -1,43 +1,33 @@
-# models/models.py
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import datetime
-
+import uuid
+from sqlalchemy.dialects.postgresql import UUID, JSON
 Base = declarative_base()
-
-class User(Base):
-    __tablename__ = "users"
-    user_id = Column(Integer, primary_key=True)
-    google_sso_id = Column(String)
-    rss_feed_url = Column(String)
-    interests = relationship("Interest", secondary="user_interests")
-
-class Interest(Base):
-    __tablename__ = "interests"
-    interest_id = Column(Integer, primary_key=True)
-    description = Column(String)
-
-class UserInterest(Base):
-    __tablename__ = "user_interests"
-    user_id = Column(Integer, ForeignKey("users.user_id"), primary_key=True)
-    interest_id = Column(Integer, ForeignKey("interests.interest_id"), primary_key=True)
 
 class Research(Base):
     __tablename__ = "research"
-    research_id = Column(Integer, primary_key=True)
-    interest_id = Column(Integer, ForeignKey("interests.interest_id"))
+    id = Column(UUID, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(UUID, nullable=False) 
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    research = Column(JSON)
 
 class Script(Base):
     __tablename__ = "scripts"
-    script_id = Column(Integer, primary_key=True)
-    research_id = Column(Integer, ForeignKey("research.research_id"))
-    script_text = Column(Text)
+    id = Column(UUID, primary_key=True, default=lambda: str(uuid.uuid4()))
+    research_id = Column(UUID, ForeignKey("research.id"))
+    script = Column(JSON)
 
 class Podcast(Base):
     __tablename__ = "podcasts"
-    podcast_id = Column(Integer, primary_key=True)
-    script_id = Column(Integer, ForeignKey("scripts.script_id"))
-    user_id = Column(Integer, ForeignKey("users.user_id"))
+    id = Column(UUID, primary_key=True, default=lambda: str(uuid.uuid4()))
+    script_id = Column(UUID, ForeignKey("scripts.id"))
+    user_id = Column(UUID, nullable=False) 
     audio_blob_url = Column(String)
+
+class Interest(Base):
+    __tablename__ = "interests"
+    id = Column(UUID, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(UUID, primary_key=True)
+    interests = Column(JSON)
