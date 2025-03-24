@@ -1,16 +1,12 @@
-from models.models import Interest, UserInterest
-from database import get_db_session
-from services import research
+from supabase_client import supabase_client
 
-def add_user_interest(user_id, interest_id):
-    session = next(get_db_session())
-    try:
-        # Create the user-interest relationship
-        user_interest = UserInterest(user_id=user_id, interest_id=interest_id)
-        session.add(user_interest)
-        session.commit()
+def add_user_interest(user_id, interests: list[str]):
+    supabase_client.table("users").update({
+        "interests": interests
+    }).eq("user_id", user_id).execute()
+    
+    return {"message": "Interest added successfully"}
 
-        return {"message": "Interest added successfully"}
-    except Exception as e:
-        session.rollback()
-        raise e
+def get_user_interests(user_id):
+    response = supabase_client.table("users").select("interests").eq("user_id", user_id).execute()
+    return response.data[0]["interests"]

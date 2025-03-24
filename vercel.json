@@ -10,5 +10,10 @@
             "src": "/(.*)",
             "dest": "landing_page/$1"
         }
-    ]
+    ],
+    "functions": {
+        "podcast_generation/api/*.py": {
+            "runtime": "python3.12"
+        }
+    }
 }

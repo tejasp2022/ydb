@@ -1,5 +1,6 @@
 openai
-fastapi[standard]
+fastapi
+mangum
 uvicorn
 python-multipart
 supabase
@@ -9,3 +10,4 @@ python-dotenv
 pydantic
 httpx
 requests
+sqlmodel

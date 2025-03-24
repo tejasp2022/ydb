@@ -1,7 +1,3 @@
-# init_db.py
-# from database import engine, Base
-# from models.models import User, Interest, UserInterest, Research, Script, Podcast
-from models.models import User, Research, Script, Podcast
 import os
 from sqlalchemy import create_engine, Column, Integer, String, MetaData, inspect
 from sqlalchemy.ext.declarative import declarative_base
@@ -23,11 +19,20 @@ engine = create_engine(
 
 Base = declarative_base()
 
+class User(Base):
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    email = Column(String(100), unique=True)
+
 def ensure_tables():
     inspector = inspect(engine)
+    
     existing_tables = inspector.get_table_names()
-    # models = [User, Interest, UserInterest, Research, Script, Podcast]
-    models = [User, Research, Script, Podcast]
+    
+    models = Base.__subclasses__()
+    
     created_tables = []
     
     for model in models:
@@ -46,6 +51,3 @@ if __name__ == "__main__":
     
     Session = sessionmaker(bind=engine)
     session = Session()
-
-if __name__ == "__main__":
-    ensure_tables()
