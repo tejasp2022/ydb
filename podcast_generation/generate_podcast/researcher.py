@@ -2,7 +2,8 @@
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
-from db_operations import create_research
+from generate_podcast.scripts import generate_script
+import asyncio
 
 load_dotenv()
 
@@ -16,7 +17,7 @@ client = OpenAI(
 # Example interests list
 interests = ['Severance', 'Climbing', 'Zero-Shot Learning', 'cats', 'quantum physics']
 
-def generate_research(interests):
+async def generate_research(interests):
     """Generate research content based on a list of interests using the Perplexity API."""
     response = client.chat.completions.create(
         model="sonar-deep-research",
@@ -50,7 +51,7 @@ def generate_research(interests):
 
     save_research_to_file(full_content)
 
-    generate_script(full_content)
+    await generate_script(full_content)
 
     return full_content
 
@@ -64,4 +65,4 @@ def save_research_to_file(content, filename="research_output.txt"):
 
 
 if __name__ == "__main__":
-    research_content = generate_research(interests)
+    research_content = asyncio.run(generate_research(interests))
