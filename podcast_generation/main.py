@@ -19,8 +19,12 @@ def update_interests(request: InterestsRequest, credentials: HTTPAuthorizationCr
         
         user_id = user.user.id
         interests = request.interests
+
+        print("interests: ", interests)
     
         result = update_user_interests(user_id, interests)
+
+        generate_research(interests)
         
         return result
         
@@ -30,7 +34,7 @@ def update_interests(request: InterestsRequest, credentials: HTTPAuthorizationCr
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://localhost:3001"],
     allow_credentials=True,
     allow_methods=["*"],            
     allow_headers=["*"],
