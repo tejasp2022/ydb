@@ -9,3 +9,5 @@ python-dotenv
 pydantic
 httpx
 requests
+google-cloud-texttospeech
+google-auth
