@@ -3,8 +3,18 @@ import { interestCategories } from '../data/interestCategories';
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Session } from '@supabase/supabase-js';
 
-// Get API base URL from environment variable with fallback
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
+// Get API base URL based on environment
+const API_BASE_URL = process.env.NODE_ENV === 'development'
+  ? (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000')
+  : process.env.VERCEL_ENV === 'production'
+    ? 'https://www.yourdailybriefing.io/api'
+    : `https://${process.env.VERCEL_URL}/api`;
+
+// Log the API base URL and environment variables for debugging
+console.log('API Base URL:', API_BASE_URL);
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('VERCEL_ENV:', process.env.VERCEL_ENV);
+console.log('VERCEL_URL:', process.env.VERCEL_URL);
 
 export const useInterests = () => {
   const [currentSection, setCurrentSection] = useState<'interests' | 'next' | 'celebration'>('interests');
