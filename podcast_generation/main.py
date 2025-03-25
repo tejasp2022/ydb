@@ -40,7 +40,8 @@ async def update_interests(request: InterestsRequest, credentials: HTTPAuthoriza
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok", "message": "API is running"}
+    pythonpath = os.environ.get("PYTHONPATH")
+    return {"status": "ok", "message": "API is running", "pythonpath": pythonpath}
 
 async def start_podcast_pipeline(user_id: str, interests: list[str]):
     await generate_research(user_id, interests)

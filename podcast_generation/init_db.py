@@ -26,11 +26,8 @@ def ensure_tables():
     
     print(f"Existing tables: {', '.join(existing_tables)}")
     
-    # Create all tables at once using Base.metadata to handle dependencies correctly
-    # This automatically resolves foreign key dependencies
     Base.metadata.create_all(engine)
     
-    # Get all model classes for reporting
     models_module = importlib.import_module('models.models')
     model_classes = []
     for name, obj in py_inspect.getmembers(models_module):
@@ -38,7 +35,6 @@ def ensure_tables():
             model_classes.append(obj)
             print(f"Found model: {name}")
     
-    # Check which tables were actually created
     new_tables = inspector.get_table_names()
     created_tables = [table for table in new_tables if table not in existing_tables]
     

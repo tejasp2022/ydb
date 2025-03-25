@@ -17,7 +17,7 @@ load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-async def generate_transcript(research):
+async def generate_transcript(research_id: str):
     response = client.chat.completions.create(
         model="gpt-4.5-preview",
         messages=[
@@ -47,14 +47,11 @@ async def generate_transcript(research):
     transcript_content = {
         "transcript_content": transcript
     }
-    
-    # Since we're passing research content, not ID, we'll handle DB operations differently
-    # add_transcript_entry_to_db(research_id, transcript_content)
+    add_transcript_entry_to_db(research_id, transcript_content)
 
-    await generate_standard_audio(transcript)
+    await generate_standard_audio(script)
 
     return transcript
 
 if __name__ == "__main__":
-    test_research = "Sample research on technology and science topics."
-    asyncio.run(generate_transcript(test_research))
+    asyncio.run(generate_transcript(research_id="06505089-1aa9-45ef-baab-ca8cdbad1e94"))
