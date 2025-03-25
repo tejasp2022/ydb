@@ -44,7 +44,7 @@ export const CelebrationPage: React.FC<CelebrationPageProps> = ({ allSelections 
           transition={{ delay: 0.4, duration: 0.5 }}
           className="text-gray-600 text-xl md:text-2xl mb-8 max-w-xl mx-auto"
         >
-          We've created a personalized briefing based on your interests:
+          We&apos;ve created a personalized briefing based on your interests:
           <span className="block mt-2 font-medium text-purple-700">
             {allSelections.join(', ')}
           </span>
