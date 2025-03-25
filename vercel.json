@@ -2,7 +2,8 @@
     "builds": [
         {
             "src": "podcast_generation/main.py",
-            "use": "@vercel/python"
+            "use": "@vercel/python@3.1.0",
+            "config": { "runtime": "python3.12" }
         },
         {
             "src": "landing_page/package.json",
