@@ -29,7 +29,7 @@ async def update_interests(request: InterestsRequest, credentials: HTTPAuthoriza
         result = update_user_interests(user_id, interests)
 
         # Fire and forget - don't wait for completion
-        asyncio.create_task(start_podcast_pipeline(interests))
+        asyncio.create_task(start_podcast_pipeline(user_id, interests))
         
         return result
         
@@ -37,8 +37,8 @@ async def update_interests(request: InterestsRequest, credentials: HTTPAuthoriza
         print(e)
         raise HTTPException(status_code=422, detail=f"Failed to update interests: {str(e)}")
 
-async def start_podcast_pipeline(interests: list[str]):
-    await generate_research(interests)
+async def start_podcast_pipeline(user_id: str, interests: list[str]):
+    await generate_research(user_id, interests)
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,9 +1,11 @@
-from models.models import Research, Script, Podcast, Interest
+from sqlalchemy import create_engine, inspect
 import os
-from sqlalchemy import create_engine, Column, Integer, String, MetaData, inspect
+import importlib
+import inspect as py_inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from dotenv import load_dotenv
+from models.models import Base
 
 load_dotenv()
 
@@ -18,18 +20,27 @@ engine = create_engine(
     )
 )
 
-Base = declarative_base()
-
 def ensure_tables():
     inspector = inspect(engine)
     existing_tables = inspector.get_table_names()
-    models = [Research, Script, Podcast, Interest]
-    created_tables = []
     
-    for model in models:
-        if model.__tablename__ not in existing_tables:
-            model.__table__.create(engine)
-            created_tables.append(model.__tablename__)
+    print(f"Existing tables: {', '.join(existing_tables)}")
+    
+    # Create all tables at once using Base.metadata to handle dependencies correctly
+    # This automatically resolves foreign key dependencies
+    Base.metadata.create_all(engine)
+    
+    # Get all model classes for reporting
+    models_module = importlib.import_module('models.models')
+    model_classes = []
+    for name, obj in py_inspect.getmembers(models_module):
+        if py_inspect.isclass(obj) and hasattr(obj, '__tablename__') and obj.__module__ == 'models.models':
+            model_classes.append(obj)
+            print(f"Found model: {name}")
+    
+    # Check which tables were actually created
+    new_tables = inspector.get_table_names()
+    created_tables = [table for table in new_tables if table not in existing_tables]
     
     if created_tables:
         print(f"Created tables: {', '.join(created_tables)}")
@@ -41,6 +52,3 @@ if __name__ == "__main__":
     
     Session = sessionmaker(bind=engine)
     session = Session()
-
-if __name__ == "__main__":
-    ensure_tables()

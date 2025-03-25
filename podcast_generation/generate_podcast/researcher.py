@@ -2,22 +2,34 @@
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
-from generate_podcast.scripts import generate_script
 import asyncio
+import importlib.util
+import sys
+from pathlib import Path
+
+# Handle imports whether run as script or imported as module
+if __name__ == "__main__":
+    # When run directly, add parent to path and use absolute imports
+    project_root = Path(__file__).parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+    from db_operations import add_research_entry_to_db
+    from supabase_client import supabase_client
+    from generate_podcast.transcripts import generate_transcript
+else:
+    # When imported as module, use relative imports
+    from ..db_operations import add_research_entry_to_db
+    from ..supabase_client import supabase_client
+    from .transcripts import generate_transcript
 
 load_dotenv()
 
-# Configure the client with the appropriate API key and base URL
-# For Perplexity API
 client = OpenAI(
     api_key=os.getenv("PERPLEXITY_API_KEY"),
     base_url=os.getenv("PERPLEXITY_BASE_URL")
 )
 
-# Example interests list
-interests = ['Severance', 'Climbing', 'Zero-Shot Learning', 'cats', 'quantum physics']
-
-async def generate_research(interests):
+async def generate_research(user_id, interests):
     """Generate research content based on a list of interests using the Perplexity API."""
     response = client.chat.completions.create(
         model="sonar-deep-research",
@@ -31,7 +43,7 @@ async def generate_research(interests):
 
             There should be enough research so that we do not have to look anywhere else for information, and can create an interesting podcast episode.
 
-            Provide as much research as possible! Go as in depth as you can so we can create a great script
+            Provide as much research as possible! Go as in depth as you can so we can create a great transcript
             """},
             {"role": "user", "content": f"Generate research based on the following interests: {interests}"}
         ],
@@ -49,20 +61,16 @@ async def generate_research(interests):
     
     print("\n\nResearch generation complete.")
 
-    save_research_to_file(full_content)
+    research_content = {
+        "research_content": full_content
+    }
 
-    await generate_script(full_content)
+    add_research_entry_to_db(user_id, research_content)
+
+    await generate_transcript(full_content)
 
     return full_content
 
-
-def save_research_to_file(content, filename="research_output.txt"):
-    """Save the generated research to a file."""
-    with open(filename, "w") as f:
-        f.write("# Research Output\n\n")
-        f.write(content)
-    print(f"Research saved to {filename}")
-
-
 if __name__ == "__main__":
-    research_content = asyncio.run(generate_research(interests))
+    test_user_uuid = '123e4567-e89b-12d3-a456-426614174000'
+    research_content = asyncio.run(generate_research(test_user_uuid, interests))

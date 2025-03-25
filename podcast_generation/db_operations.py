@@ -35,13 +35,13 @@ def update_user_interests(user_id: str, interests: List[str]) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 # Research Operations
-def create_research(user_id: str) -> Dict[str, Any]:
+def add_research_entry_to_db(user_id: str, research_content: Dict[str, Any]) -> Dict[str, Any]:
     """
     Create a new research entry for a user.
     
     Args:
         user_id: The ID of the user
-        
+        research_content: The content of the research
     Returns:
         Dict containing the created research data
         
@@ -49,7 +49,8 @@ def create_research(user_id: str) -> Dict[str, Any]:
         HTTPException: If database operation fails
     """
     data = {
-        "user_id": user_id
+        "user_id": user_id,
+        "research": research_content
     }
     
     try:
@@ -61,163 +62,36 @@ def create_research(user_id: str) -> Dict[str, Any]:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-def get_research(research_id: int) -> Dict[str, Any]:
+def add_transcript_entry_to_db(research_id: str, transcript_content: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Get a research entry by ID.
+    Create a new transcript entry for a research entry.
     
     Args:
-        research_id: The ID of the research
-        
+        research_id: The ID of the research entry
+        transcript_content: The content of the transcript
     Returns:
-        Dict containing the research data
-        
-    Raises:
-        HTTPException: If research not found or database operation fails
-    """
-    try:
-        result = supabase_client.table("research").select("*").eq("research_id", research_id).execute()
-        if not result.data:
-            raise HTTPException(status_code=404, detail=f"Research with ID {research_id} not found")
-        
-        return result.data[0]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-
-def get_user_research(user_id: str) -> List[Dict[str, Any]]:
-    """
-    Get all research entries for a user.
-    
-    Args:
-        user_id: The ID of the user
-        
-    Returns:
-        List of dicts containing the research data
-        
-    Raises:
-        HTTPException: If database operation fails
-    """
-    try:
-        result = supabase_client.table("research").select("*").eq("user_id", user_id).execute()
-        return result.data
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-
-# Script Operations
-def create_script(research_id: int, script_text: str) -> Dict[str, Any]:
-    """
-    Create a new script for a research entry.
-    
-    Args:
-        research_id: The ID of the research
-        script_text: The text content of the script
-        
-    Returns:
-        Dict containing the created script data
+        Dict containing the created transcript data
         
     Raises:
         HTTPException: If database operation fails
     """
     data = {
         "research_id": research_id,
-        "script_text": script_text
+        "transcript": transcript_content
     }
     
     try:
-        result = supabase_client.table("scripts").insert(data).execute()
+        result = supabase_client.table("transcripts").insert(data).execute()
         if not result.data:
-            raise HTTPException(status_code=500, detail="Failed to create script in database")
+            raise HTTPException(status_code=500, detail="Failed to create transcript in database")
         
-        return {"message": "Script created successfully", "data": result.data[0]}
-    except Exception as e:
+        return {"message": "Transcript created successfully", "data": result.data[0]}
+    except Exception as e:  
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-def get_script(script_id: int) -> Dict[str, Any]:
-    """
-    Get a script by ID.
     
-    Args:
-        script_id: The ID of the script
-        
-    Returns:
-        Dict containing the script data
-        
-    Raises:
-        HTTPException: If script not found or database operation fails
-    """
-    try:
-        result = supabase_client.table("scripts").select("*").eq("script_id", script_id).execute()
-        if not result.data:
-            raise HTTPException(status_code=404, detail=f"Script with ID {script_id} not found")
-        
-        return result.data[0]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-def get_scripts_by_research(research_id: int) -> List[Dict[str, Any]]:
-    """
-    Get all scripts for a research entry.
-    
-    Args:
-        research_id: The ID of the research
-        
-    Returns:
-        List of dicts containing the script data
-        
-    Raises:
-        HTTPException: If database operation fails
-    """
-    try:
-        result = supabase_client.table("scripts").select("*").eq("research_id", research_id).execute()
-        return result.data
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-# Podcast Operations
-def create_podcast(script_id: int, user_id: str, audio_blob_url: str) -> Dict[str, Any]:
-    """
-    Create a new podcast entry.
-    
-    Args:
-        script_id: The ID of the script
-        user_id: The ID of the user
-        audio_blob_url: URL to the audio blob
-        
-    Returns:
-        Dict containing the created podcast data
-        
-    Raises:
-        HTTPException: If database operation fails
-    """
-    data = {
-        "script_id": script_id,
-        "user_id": user_id,
-        "audio_blob_url": audio_blob_url
-    }
-    
-    try:
-        result = supabase_client.table("podcasts").insert(data).execute()
-        if not result.data:
-            raise HTTPException(status_code=500, detail="Failed to create podcast in database")
-        
-        return {"message": "Podcast created successfully", "data": result.data[0]}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-def get_user_podcasts(user_id: str) -> List[Dict[str, Any]]:
-    """
-    Get all podcasts for a user.
-    
-    Args:
-        user_id: The ID of the user
-        
-    Returns:
-        List of dicts containing the podcast data
-        
-    Raises:
-        HTTPException: If database operation fails
-    """
-    try:
-        result = supabase_client.table("podcasts").select("*").eq("user_id", user_id).execute()
-        return result.data
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
