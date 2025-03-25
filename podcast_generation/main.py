@@ -1,10 +1,10 @@
 from fastapi import FastAPI, Depends, HTTPException
-from supabase_client import supabase_client
+from podcast_generation.supabase_client import supabase_client
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from db_operations import update_user_interests
-from generate_podcast.researcher import generate_research
+from podcast_generation.db_operations import update_user_interests
+from podcast_generation.generate_podcast.researcher import generate_research
 import asyncio
 import sys
 
