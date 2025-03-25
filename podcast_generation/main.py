@@ -20,15 +20,12 @@ class InterestsRequest(BaseModel):
 async def update_interests(request: InterestsRequest, credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     try:
         token = credentials.credentials
-        print("token: ", token)
         user = supabase_client.auth.get_user(jwt=token)
         if not user:
             raise HTTPException(status_code=401, detail="User not authenticated")
         
         user_id = user.user.id
         interests = request.interests
-
-        print("interests: ", interests)
     
         result = update_user_interests(user_id, interests)
 
@@ -43,7 +40,6 @@ async def update_interests(request: InterestsRequest, credentials: HTTPAuthoriza
 
 @app.get("/health")
 async def health_check():
-    print("Health check endpoint hit")
     return {"status": "ok", "message": "API is running"}
 
 async def start_podcast_pipeline(user_id: str, interests: list[str]):
@@ -56,10 +52,3 @@ app.add_middleware(
     allow_methods=["*"],            
     allow_headers=["*"],
 )
-
-# This is required for Vercel serverless functions
-# Export the app variable to be used by Vercel
-from mangum import Mangum
-
-print("Creating Mangum handler for Vercel serverless function")
-handler = Mangum(app)

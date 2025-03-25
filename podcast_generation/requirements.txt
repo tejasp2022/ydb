@@ -11,4 +11,3 @@ httpx
 requests
 google-cloud-texttospeech
 google-auth
-mangum
