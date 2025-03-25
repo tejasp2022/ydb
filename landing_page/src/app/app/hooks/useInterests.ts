@@ -4,7 +4,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Session } from '@supabase/supabase-js';
 
 // Get API base URL based on environment
-const API_BASE_URL = 'https://ydb-web-git-productionizebackend-tejas-priyadarshis-projects.vercel.app/api'
+const API_BASE_URL = 'https://www.yourdailybriefing.io/api'
 
 // Log the API base URL and environment variables for debugging
 console.log('API Base URL:', API_BASE_URL);
