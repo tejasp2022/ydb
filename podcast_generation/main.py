@@ -42,8 +42,14 @@ async def start_podcast_pipeline(user_id: str, interests: list[str]):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=["http://localhost:3000", "https://ydb-web-git-main-tejas-priyadarshis-projects.vercel.app", "https://yourdailybriefing.io", "https://www.yourdailybriefing.io"],
     allow_credentials=True,
     allow_methods=["*"],            
     allow_headers=["*"],
 )
+
+# This is required for Vercel serverless functions
+# Export the app variable to be used by Vercel
+from mangum import Adapter
+
+handler = Adapter(app)
