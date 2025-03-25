@@ -11,7 +11,7 @@ import sys
 print("Python version:", sys.version)
 print("Starting FastAPI application...")
 
-app = FastAPI()
+app = FastAPI(root_path="/api")
 
 class InterestsRequest(BaseModel):
     interests: list[str]
