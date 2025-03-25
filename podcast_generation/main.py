@@ -6,6 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from db_operations import update_user_interests
 from generate_podcast.researcher import generate_research
 import asyncio
+import sys
+
+print("Python version:", sys.version)
+print("Starting FastAPI application...")
 
 app = FastAPI()
 
@@ -37,6 +41,11 @@ async def update_interests(request: InterestsRequest, credentials: HTTPAuthoriza
         print(e)
         raise HTTPException(status_code=422, detail=f"Failed to update interests: {str(e)}")
 
+@app.get("/health")
+async def health_check():
+    print("Health check endpoint hit")
+    return {"status": "ok", "message": "API is running"}
+
 async def start_podcast_pipeline(user_id: str, interests: list[str]):
     await generate_research(user_id, interests)
 
@@ -50,6 +59,7 @@ app.add_middleware(
 
 # This is required for Vercel serverless functions
 # Export the app variable to be used by Vercel
-from mangum import Adapter
+from mangum import Mangum
 
-handler = Adapter(app)
+print("Creating Mangum handler for Vercel serverless function")
+handler = Mangum(app)
