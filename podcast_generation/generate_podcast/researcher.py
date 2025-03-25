@@ -7,20 +7,15 @@ import importlib.util
 import sys
 from pathlib import Path
 
-# Handle imports whether run as script or imported as module
-if __name__ == "__main__":
-    # When run directly, add parent to path and use absolute imports
-    project_root = Path(__file__).parent.parent
-    if str(project_root) not in sys.path:
-        sys.path.insert(0, str(project_root))
-    from db_operations import add_research_entry_to_db
-    from supabase_client import supabase_client
-    from generate_podcast.transcripts import generate_transcript
-else:
-    # When imported as module, use relative imports
-    from ..db_operations import add_research_entry_to_db
-    from ..supabase_client import supabase_client
-    from .transcripts import generate_transcript
+# Add parent directory to path to enable imports
+project_root = Path(__file__).parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+# Use absolute imports that work in all contexts
+from db_operations import add_research_entry_to_db
+from supabase_client import supabase_client
+from generate_podcast.transcripts import generate_transcript
 
 load_dotenv()
 
@@ -73,4 +68,5 @@ async def generate_research(user_id, interests):
 
 if __name__ == "__main__":
     test_user_uuid = '123e4567-e89b-12d3-a456-426614174000'
+    interests = ["technology", "science"]
     research_content = asyncio.run(generate_research(test_user_uuid, interests))

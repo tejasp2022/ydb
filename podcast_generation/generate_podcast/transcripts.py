@@ -1,14 +1,23 @@
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
-from db_operations add_transcript_entry_to_db
+import sys
+from pathlib import Path
+
+# Add parent directory to path to enable imports
+project_root = Path(__file__).parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from db_operations import add_transcript_entry_to_db
 from generate_podcast.podcast_generate_single_nossml import generate_standard_audio
 import asyncio
+
 load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-async def generate_transcript(research_id: str):
+async def generate_transcript(research):
     response = client.chat.completions.create(
         model="gpt-4.5-preview",
         messages=[
@@ -38,11 +47,14 @@ async def generate_transcript(research_id: str):
     transcript_content = {
         "transcript_content": transcript
     }
-    add_transcript_entry_to_db(research_id, transcript_content)
+    
+    # Since we're passing research content, not ID, we'll handle DB operations differently
+    # add_transcript_entry_to_db(research_id, transcript_content)
 
-    await generate_standard_audio(script)
+    await generate_standard_audio(transcript)
 
-    return script
+    return transcript
 
 if __name__ == "__main__":
-    asyncio.run(generate_transcript(research_id="06505089-1aa9-45ef-baab-ca8cdbad1e94"))
+    test_research = "Sample research on technology and science topics."
+    asyncio.run(generate_transcript(test_research))
