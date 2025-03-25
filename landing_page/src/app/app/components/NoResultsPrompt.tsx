@@ -22,7 +22,7 @@ export const NoResultsPrompt: React.FC<NoResultsPromptProps> = ({
       exit={{ opacity: 0 }}
       className="bg-purple-50 p-4 rounded-lg mb-4 text-center"
     >
-      <p className="text-purple-700 mb-2">No results found for "{searchQuery}"</p>
+      <p className="text-purple-700 mb-2">No results found for &quot;{searchQuery}&quot;</p>
       <button
         onClick={() => handleAddCustomTopic(searchQuery)}
         className="bg-purple-700 text-white px-4 py-2 rounded-lg font-medium text-sm inline-flex items-center gap-1"
