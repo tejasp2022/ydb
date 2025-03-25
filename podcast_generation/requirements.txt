@@ -11,5 +11,4 @@ httpx
 requests
 google-cloud-texttospeech
 google-auth
-asyncio
 mangum
