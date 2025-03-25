@@ -3,6 +3,9 @@ import { interestCategories } from '../data/interestCategories';
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Session } from '@supabase/supabase-js';
 
+// Get API base URL from environment variable with fallback
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
+
 export const useInterests = () => {
   const [currentSection, setCurrentSection] = useState<'interests' | 'next' | 'celebration'>('interests');
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
@@ -76,8 +79,8 @@ export const useInterests = () => {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
       
-      // Submit interests to API at 127.0.0.1:8000/update-interests
-      const response = await fetch('http://127.0.0.1:8000/update-interests', {
+      // Submit interests to API using environment variable
+      const response = await fetch(`${API_BASE_URL}/update-interests`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
