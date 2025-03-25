@@ -7,15 +7,9 @@ import importlib.util
 import sys
 from pathlib import Path
 
-# Add parent directory to path to enable imports
-project_root = Path(__file__).parent.parent
-if str(project_root) not in sys.path:
-    sys.path.insert(0, str(project_root))
-
-# Use absolute imports that work in all contexts
-from db_operations import add_research_entry_to_db
-from supabase_client import supabase_client
-from generate_podcast.transcripts import generate_transcript
+from podcast_generation.db_operations import add_research_entry_to_db
+from podcast_generation.supabase_client import supabase_client
+from podcast_generation.generate_podcast.transcripts import generate_transcript
 
 load_dotenv()
 

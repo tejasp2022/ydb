@@ -1,4 +1,4 @@
-from supabase_client import supabase_client
+from podcast_generation.supabase_client import supabase_client
 from fastapi import HTTPException
 from typing import List, Dict, Any, Optional
 
