@@ -111,7 +111,7 @@ async def create_transcript(
             raise HTTPException(status_code=400, detail="Invalid webhook source table")
             
         research_id = payload.record.id
-        user_id = payload.record.user_id
+        research_data = payload.record.research_data
         
         # TODO: Add transcript creation logic
         # success = create_transcript_for_research(user_id, research_id)

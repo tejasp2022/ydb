@@ -35,7 +35,7 @@ def update_user_interests(user_id: str, interests: List[str]) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 # Research Operations
-def add_research_entry_to_db(user_id: str, research_content: Dict[str, Any]) -> Dict[str, Any]:
+def add_research_entry_to_db(interests_id: str, research_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Create a new research entry for a user.
     
@@ -49,8 +49,8 @@ def add_research_entry_to_db(user_id: str, research_content: Dict[str, Any]) -> 
         HTTPException: If database operation fails
     """
     data = {
-        "user_id": user_id,
-        "research": research_content
+        "interests_id": interests_id,
+        "research_data": research_data
     }
     
     try:
@@ -90,8 +90,33 @@ def add_transcript_entry_to_db(research_id: str, transcript_content: Dict[str, A
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
     
-
-
+def add_podcast_entry_to_db(transcript_id: str, audio_blob_url: str) -> Dict[str, Any]:
+    """
+    Create a new podcast entry for a transcript entry.
+    
+    Args:
+        transcript_id: The ID of the transcript entry
+        audio_blob_url: The URL of the audio blob
+    Returns:
+        Dict containing the created podcast data
+        
+    Raises:
+        HTTPException: If database operation fails
+    """ 
+    data = {    
+        "transcript_id": transcript_id,
+        "audio_blob_url": audio_blob_url
+    }
+    
+    try:
+        result = supabase_client.table("podcasts").insert(data).execute()
+        if not result.data:
+            raise HTTPException(status_code=500, detail="Failed to create podcast in database")
+        
+        return {"message": "Podcast created successfully", "data": result.data[0]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    
 
 
 

@@ -11,3 +11,6 @@ httpx
 requests
 google-cloud-texttospeech
 google-auth
+pytest
+pytest-asyncio
+pytest-mock
