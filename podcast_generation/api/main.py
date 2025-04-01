@@ -1,10 +1,9 @@
 from fastapi import FastAPI, Depends, HTTPException, Header, Body, Request
-from podcast_generation.supabase_client import supabase_client
+from podcast_generation.supabase_client import get_supabase_client
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
-from podcast_generation.db_operations import update_user_interests
-from podcast_generation.generate_podcast.researcher import generate_research
-from podcast_generation.api_request_models import UpdateInterestsRequest, CreateResearchRequest, CreateTranscriptRequest, CreatePodcastRequest, WebhookPayload
+from podcast_generation.db.db_operations import update_user_interests
+from podcast_generation.api.api_request_models import UpdateInterestsRequest, CreateResearchRequest, CreateTranscriptRequest, CreatePodcastRequest, WebhookPayload
 import asyncio
 import sys
 import hmac
@@ -16,7 +15,8 @@ app = FastAPI(root_path="/api")
 
 def validate_user(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
     token = credentials.credentials
-    user = supabase_client.auth.get_user(jwt=token)
+    supabase = get_supabase_client()
+    user = supabase.auth.get_user(jwt=token)
     if not user:
         raise HTTPException(status_code=401, detail="User not authenticated")
     return user
@@ -45,7 +45,8 @@ def log_webhook_request(table_name: str, payload: WebhookPayload, success: bool,
         }
         
         # Insert into webhook_logs table
-        result = supabase_client.table("webhook_logs").insert(log_data).execute()
+        supabase = get_supabase_client()
+        result = supabase.table("webhook_logs").insert(log_data).execute()
         return result
     except Exception as e:
         print(f"Failed to log webhook request: {str(e)}")
@@ -158,9 +159,6 @@ async def create_podcast(
 async def health_check():
     pythonpath = os.environ.get("PYTHONPATH")
     return {"status": "ok", "message": "API is running"}
-
-async def start_podcast_pipeline(user_id: str, interests: list[str]):
-    await generate_research(user_id, interests)
 
 app.add_middleware(
     CORSMiddleware,

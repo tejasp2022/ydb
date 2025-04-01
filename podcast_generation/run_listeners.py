@@ -15,7 +15,7 @@ from google.cloud import texttospeech, texttospeech_v1beta1
 from google.oauth2 import service_account
 from openai import OpenAI
 
-from podcast_generation.models.models import StatusType
+from podcast_generation.db.models import StatusType
 from podcast_generation.supabase_client import get_supabase_async_client
 
 PIPELINE_CHANNEL = "pipeline_execution_channel"
@@ -97,7 +97,84 @@ async def generate_research_content(interests: list) -> str:
         print(f"[Perplexity] Error generating research: {str(e)}")
         raise
 
-async def process_pipeline_execution_changes(payload: Dict[str, Any]):
+async def update_status(pipeline_execution_id: str, status: StatusType):
+    """Update the status of a pipeline execution."""
+    try:
+        status_data = {
+            'pipeline_execution_id': pipeline_execution_id,
+            'status': status
+        }
+        await supabase_client.table('status').insert(status_data).execute()
+        print(f"[Status] Updated status to {status} for pipeline {pipeline_execution_id}")
+    except Exception as e:
+        print(f"[Status] Error updating status: {str(e)}")
+        raise
+
+async def update_status_by_research_id(research_id: str, status: StatusType):
+    """Update the status of a pipeline execution by research_id."""
+    try:
+        # First get the pipeline execution ID
+        pipeline_response = await supabase_client.table('pipeline_execution') \
+            .select('id') \
+            .eq('research_id', research_id) \
+            .single() \
+            .execute()
+            
+        if not pipeline_response.data:
+            print(f"[Status] No pipeline execution found for research {research_id}")
+            return
+            
+        pipeline_id = pipeline_response.data.get('id')
+    except Exception as e:
+        print(f"[Status] Error getting pipeline execution id for research {research_id}: {str(e)}")
+        raise
+        sys.exit(0)
+    
+    try:
+        # Then create the status entry
+        status_data = {
+            'pipeline_execution_id': pipeline_id,
+            'status': status
+        }
+        await supabase_client.table('status').insert(status_data).execute()
+        print(f"[Status] Updated status to {status} for research {research_id}")
+    except Exception as e:
+        print(f"[Status] Error updating status for pipeline {pipeline_id}: {str(e)}")
+        raise
+
+async def update_status_by_transcript_id(transcript_id: str, status: StatusType):
+    """Update the status of a pipeline execution by transcript_id."""
+    try:
+        # First get the pipeline execution ID
+        pipeline_response = await supabase_client.table('pipeline_execution') \
+            .select('id') \
+            .eq('transcript_id', transcript_id) \
+            .single() \
+            .execute()
+            
+        if not pipeline_response.data:
+            print(f"[Status] No pipeline execution found for transcript {transcript_id}")
+            return
+            
+        pipeline_id = pipeline_response.data.get('id')
+    except Exception as e:
+        print(f"[Status] Error getting pipeline execution id for transcript {transcript_id}: {str(e)}")
+        raise
+        sys.exit(0)
+    
+    try:
+        # Then create the status entry
+        status_data = {
+            'pipeline_execution_id': pipeline_id,
+            'status': status
+        }
+        await supabase_client.table('status').insert(status_data).execute()
+        print(f"[Status] Updated status to {status} for transcript {transcript_id}")
+    except Exception as e:
+        print(f"[Status] Error updating status for pipeline {pipeline_id}: {str(e)}")
+        raise
+
+async def create_research_from_interests(payload: Dict[str, Any]):
     """Async handler for pipeline execution changes"""
     try:
         print('[Pipeline Handler] Received payload:', payload)
@@ -111,6 +188,9 @@ async def process_pipeline_execution_changes(payload: Dict[str, Any]):
 
         print(f'[Pipeline Handler] Processing pipeline execution: {pipeline_id} for interests_id: {interests_id}')
         
+        # Update status to research started
+        await update_status(pipeline_id, StatusType.RESEARCH_STARTED)
+        
         interests_response = await supabase_client.table('interests') \
             .select('interests') \
             .eq('id', interests_id) \
@@ -120,6 +200,7 @@ async def process_pipeline_execution_changes(payload: Dict[str, Any]):
 
         if not interests_response.data:
             print(f'[Pipeline Handler] No interests found for id: {interests_id}')
+            await update_status(pipeline_id, StatusType.RESEARCH_FAILED)
             return
 
         interests = interests_response.data[0].get('interests', [])
@@ -149,8 +230,12 @@ async def process_pipeline_execution_changes(payload: Dict[str, Any]):
             .eq('id', pipeline_id) \
             .execute()
         
+        # Update status to research completed
+        # await update_status(pipeline_id, StatusType.RESEARCH_COMPLETED)
+        
     except Exception as e:
         print(f'[Pipeline Handler] Error processing pipeline execution: {str(e)}')
+        await update_status(pipeline_id, StatusType.RESEARCH_FAILED)
         import traceback
         traceback.print_exc()
 
@@ -199,7 +284,7 @@ async def create_transcript_entry(research_id: str, transcript_content: str):
     print(f"[Transcript Handler] Created transcript entry: {transcript_response.data[0].get('id')}")
     return transcript_response
 
-async def process_research_changes(payload: Dict[str, Any]):
+async def create_transcript_from_research(payload: Dict[str, Any]):
     """Async handler for research changes"""
     try:
         if isinstance(payload, dict):
@@ -209,13 +294,40 @@ async def process_research_changes(payload: Dict[str, Any]):
             
             print(f'[Research Handler] Processing research: {research_id}')
             
-            try:
-                transcript_content = await generate_transcript_from_research(research_data.get('content'))
+            # Get pipeline execution ID
+            pipeline_response = await supabase_client.table('pipeline_execution') \
+                .select('id') \
+                .eq('research_id', research_id) \
+                .single() \
+                .execute()
                 
-                await create_transcript_entry(research_id, transcript_content)
+            if not pipeline_response.data:
+                print(f'[Research Handler] No pipeline execution found for research {research_id}')
+                return
+                
+            pipeline_id = pipeline_response.data.get('id')
+            
+            # Update status to transcript started
+            await update_status(pipeline_id, StatusType.TRANSCRIPT_STARTED)
+            
+            try:
+                # Extract content from research_data
+                research_content = research_data.get('content')
+                if not research_content:
+                    print('[Research Handler] No research content found')
+                    await update_status(pipeline_id, StatusType.TRANSCRIPT_FAILED)
+                    return
+                    
+                transcript_content = await generate_transcript_from_research(research_content)
+                
+                transcript_response = await create_transcript_entry(research_id, transcript_content)
+                
+                # Update status to transcript completed
+                # await update_status(pipeline_id, StatusType.TRANSCRIPT_COMPLETED)
                 
             except Exception as e:
                 print(f'[Research Handler] Error generating transcript: {str(e)}')
+                await update_status(pipeline_id, StatusType.TRANSCRIPT_FAILED)
                 raise
             
     except Exception as e:
@@ -369,7 +481,7 @@ async def create_podcast_entry(transcript_id: str, audio_url: str) -> Dict:
         print(f"[Transcript Handler] Error creating podcast entry: {str(e)}")
         raise
 
-async def process_transcript_changes(payload: Dict[str, Any]):
+async def create_podcast_from_transcript(payload: Dict[str, Any]):
     """Async handler for transcript changes"""
     try:
         record = payload.get('data', {}).get('record', {})
@@ -383,6 +495,9 @@ async def process_transcript_changes(payload: Dict[str, Any]):
             print('[Transcript Handler] No transcript content found')
             return
             
+        # Update status to podcast started
+        await update_status_by_transcript_id(transcript_id, StatusType.PODCAST_STARTED)
+            
         try:
             audio_data = await generate_audio_for_transcript(transcript_content, transcript_id)
             
@@ -394,6 +509,7 @@ async def process_transcript_changes(payload: Dict[str, Any]):
                     print(f"[Transcript Handler] Successfully uploaded audio to storage: {audio_url}")
                 except Exception as e:
                     print(f"[Transcript Handler] Failed to upload audio to storage: {str(e)}")
+                    await update_status_by_transcript_id(transcript_id, StatusType.PODCAST_FAILED)
                     raise
             else:
                 audio_url = audio_data['audio_uri']
@@ -402,13 +518,20 @@ async def process_transcript_changes(payload: Dict[str, Any]):
                 podcast_entry = await create_podcast_entry(transcript_id, audio_url)
                 if podcast_entry:
                     print(f'[Transcript Handler] Generated and stored audio for transcript: {transcript_id}')
+                    # Update status to podcast completed
+                    # await update_status_by_transcript_id(transcript_id, StatusType.PODCAST_COMPLETED)
+                    # Update status to execution completed
+                    # await update_status_by_transcript_id(transcript_id, StatusType.EXECUTION_COMPLETED)
                 else:
                     print(f'[Transcript Handler] Failed to create podcast entry for transcript: {transcript_id}')
+                    await update_status_by_transcript_id(transcript_id, StatusType.PODCAST_FAILED)
             else:
                 print('[Transcript Handler] No audio URL available for podcast creation')
+                await update_status_by_transcript_id(transcript_id, StatusType.PODCAST_FAILED)
             
         except Exception as e:
             print(f'[Transcript Handler] Error generating audio: {str(e)}')
+            await update_status_by_transcript_id(transcript_id, StatusType.PODCAST_FAILED)
             raise
             
     except Exception as e:
@@ -435,28 +558,22 @@ async def process_event_queue():
             event_type, payload = await event_queue.get()
             
             if event_type == 'pipeline':
-                asyncio.create_task(process_pipeline_execution_changes(payload))
+                asyncio.create_task(create_research_from_interests(payload))
             elif event_type == 'research':
-                asyncio.create_task(process_research_changes(payload))
+                asyncio.create_task(create_transcript_from_research(payload))
             elif event_type == 'transcript':
-                asyncio.create_task(process_transcript_changes(payload))
+                asyncio.create_task(create_podcast_from_transcript(payload))
             
             event_queue.task_done()
             
         except Exception as e:
             print(f"[Event Queue] Error processing event: {str(e)}")
 
-async def initialize_supabase():
-    """Initialize the Supabase client"""
-    global supabase_client
-    if supabase_client is None:
-        supabase_client = await get_supabase_async_client()
-    return supabase_client
-
 async def setup_and_run_listeners():
     """Setup and run realtime listeners"""
     try:
-        await initialize_supabase()
+        global supabase_client
+        supabase_client = await get_supabase_async_client()
         
         print("[System] Setting up listeners...")
         

@@ -7,7 +7,7 @@ from sqlalchemy import create_engine, inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from dotenv import load_dotenv
-from models.models import Base
+from podcast_generation.db.models import Base
 
 load_dotenv()
 

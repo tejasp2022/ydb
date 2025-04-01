@@ -1,4 +1,4 @@
-from podcast_generation.supabase_client import supabase_client
+from podcast_generation.supabase_client import get_supabase_client
 from fastapi import HTTPException
 from typing import List, Dict, Any, Optional
 
@@ -26,7 +26,8 @@ def update_user_interests(user_id: str, interests: List[str]) -> Dict[str, Any]:
     }
     
     try:
-        result = supabase_client.table("interests").upsert(data).execute()
+        supabase = get_supabase_client()
+        result = supabase.table("interests").upsert(data).execute()
         if not result.data:
             raise HTTPException(status_code=500, detail="Failed to update interests in database")
         
@@ -54,7 +55,8 @@ def add_research_entry_to_db(interests_id: str, research_data: Dict[str, Any]) -
     }
     
     try:
-        result = supabase_client.table("research").insert(data).execute()
+        supabase = get_supabase_client()
+        result = supabase.table("research").insert(data).execute()
         if not result.data:
             raise HTTPException(status_code=500, detail="Failed to create research in database")
         
@@ -81,7 +83,8 @@ def add_transcript_entry_to_db(research_id: str, transcript_content: Dict[str, A
     }
     
     try:
-        result = supabase_client.table("transcripts").insert(data).execute()
+        supabase = get_supabase_client()
+        result = supabase.table("transcripts").insert(data).execute()
         if not result.data:
             raise HTTPException(status_code=500, detail="Failed to create transcript in database")
         
@@ -109,7 +112,8 @@ def add_podcast_entry_to_db(transcript_id: str, audio_blob_url: str) -> Dict[str
     }
     
     try:
-        result = supabase_client.table("podcasts").insert(data).execute()
+        supabase = get_supabase_client()
+        result = supabase.table("podcasts").insert(data).execute()
         if not result.data:
             raise HTTPException(status_code=500, detail="Failed to create podcast in database")
         
